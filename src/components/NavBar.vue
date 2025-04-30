@@ -3,7 +3,7 @@
     <div class="container">
       <!-- Logo -->
       <div class="logo">
-        <a href="/">
+        <a href="/home">
           <img src="../assets/blueLogo.png" alt="Bookworm Logo" class="logo-image" />
         </a>
       </div>
@@ -12,7 +12,7 @@
       <nav class="navigation">
         <ul class="nav-links">
           <li class="nav-item">
-            <a href="/books" class="nav-link active">All Books</a>
+            <a href="/home" class="nav-link active">All Books</a>
           </li>
           <li class="nav-item">
             <a href="/contact" class="nav-link">Contact Us</a>
@@ -58,7 +58,7 @@
     <nav v-if="isMenuOpen" class="mobile-navigation">
       <ul class="mobile-nav-links">
         <li class="mobile-nav-item">
-          <a href="/books" class="mobile-nav-link active">All Books</a>
+          <a href="/home" class="mobile-nav-link active">All Books</a>
         </li>
         <li class="mobile-nav-item">
           <a href="/contact" class="mobile-nav-link">Contact Us</a>

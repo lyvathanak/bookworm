@@ -1,9 +1,9 @@
 <template>
     <div class="book-description-page">
       <div class="breadcrumb">
-        <a href="/" class="breadcrumb-link home">Home</a>
+        <a href="/home" class="breadcrumb-link home">Home</a>
         <span class="breadcrumb-separator">/</span>
-        <a href="/books" class="breadcrumb-link">Books</a>
+        <a href="/home" class="breadcrumb-link">Books</a>
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-current">{{ book.title }}</span>
       </div>
