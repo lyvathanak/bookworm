@@ -1,21 +1,24 @@
 <template>
   <div id="app">
     <NavBar />
-    <!-- Your other content can go here -->
+    <router-view />
+    <AppFooter />
   </div>
 </template>
 
 <script>
 import NavBar from './components/NavBar.vue'
+import AppFooter from './components/FooterPage.vue'
 
 export default {
   name: 'App',
   components: {
-    NavBar
+    NavBar,
+    AppFooter
   }
 }
 </script>
 
 <style>
-/* You can add your global styles here */
+
 </style>
