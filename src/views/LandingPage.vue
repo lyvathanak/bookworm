@@ -2,11 +2,11 @@
     <div class="landing-page">
       <!-- Logo Section -->
       <div class="logo-section">
-        <div class="logo-container">
+        <div class="logo-container" @click="navigateToHome()">
           <img src="../assets/logo.png" alt="BookWorm Logo" class="logo-image" />
           <div class="brand-text">
-            <h1 class="brand-name">BOOK <span class="brand-highlight">WORM</span></h1>
-            <p class="brand-tagline">ONLINE BOOKSTORE</p>
+            <h1 class="brand-name" @click="navigateToHome()">BOOK <span class="brand-highlight">WORM</span></h1>
+            <p class="brand-tagline" @click="navigateToHome()">ONLINE BOOKSTORE</p>
           </div>
         </div>
       </div>
