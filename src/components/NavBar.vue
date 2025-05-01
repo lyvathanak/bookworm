@@ -1,95 +1,97 @@
 <template>
-  <header class="header">
-    <div class="container">
+  <header class="header bg-blue-900 text-white">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
       <!-- Logo -->
       <div class="logo">
-        <a href="/">
-          <img src="../assets/blueLogo.png" alt="Bookworm Logo" class="logo-image" />
-        </a>
+        <router-link to="/">
+          <img src="../assets/blueLogo.png" alt="Bookworm Logo" class="h-8" />
+        </router-link>
       </div>
-      
+
       <!-- Navigation -->
-      <nav class="navigation">
-        <ul class="nav-links">
+      <nav class="navigation hidden md:flex">
+        <ul class="nav-links flex space-x-6">
           <li class="nav-item">
-            <a href="/books" class="nav-link active">All Books</a>
+            <router-link to="/books" class="nav-link hover:text-gray-300">All Books</router-link>
           </li>
           <li class="nav-item">
-            <a href="/contact" class="nav-link">Contact Us</a>
+            <router-link to="/contact" class="nav-link hover:text-gray-300">Contact Us</router-link>
           </li>
         </ul>
       </nav>
-      
+
       <!-- Search Bar -->
-      <div class="search-container">
-        <form @submit.prevent="handleSearch" class="search-form">
-          <input 
-            type="text" 
-            v-model="searchQuery" 
-            placeholder="Search by title or author" 
-            class="search-input"
+      <div class="search-container hidden md:flex">
+        <form @submit.prevent="handleSearch" class="search-form relative">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Search by title or author"
+            class="search-input rounded-full px-4 py-2 text-black"
           />
-          <button type="submit" class="search-button">
-            <i class="fas fa-search"></i>
+          <button type="submit" class="search-button absolute right-3 top-1/2 transform -translate-y-1/2">
+            <i class="fas fa-search text-gray-500"></i>
           </button>
         </form>
       </div>
-      
+
       <!-- User Actions -->
-      <div class="user-actions">
-        <a href="/wishlist" class="action-icon">
-          <i class="fas fa-heart"></i>
-        </a>
-        <a href="/cart" class="action-icon">
-          <i class="fas fa-shopping-cart"></i>
-        </a>
-        <a href="/account" class="action-icon">
-          <i class="fas fa-user"></i>
-        </a>
+      <div class="user-actions hidden md:flex space-x-4">
+        <router-link to="/wishlist" class="action-icon">
+          <i class="fas fa-heart text-xl hover:text-gray-300"></i>
+        </router-link>
+        <router-link to="/cart" class="action-icon">
+          <i class="fas fa-shopping-cart text-xl hover:text-gray-300"></i>
+        </router-link>
+        <router-link to="/account" class="action-icon">
+          <i class="fas fa-user text-xl hover:text-gray-300"></i>
+        </router-link>
       </div>
 
       <!-- Mobile Menu Toggle -->
-      <div class="mobile-menu-toggle" @click="toggleMenu">
-        <div class="toggle-icon"></div>
-        <div class="toggle-icon"></div>
-        <div class="toggle-icon"></div>
+      <div class="mobile-menu-toggle md:hidden" @click="toggleMenu">
+        <div class="toggle-icon w-6 h-0.5 bg-white mb-1.5"></div>
+        <div class="toggle-icon w-6 h-0.5 bg-white mb-1.5"></div>
+        <div class="toggle-icon w-6 h-0.5 bg-white"></div>
       </div>
     </div>
-    <nav v-if="isMenuOpen" class="mobile-navigation">
-      <ul class="mobile-nav-links">
+
+    <!-- Mobile Navigation -->
+    <nav v-if="isMenuOpen" class="mobile-navigation bg-blue-900 md:hidden">
+      <ul class="mobile-nav-links p-4">
         <li class="mobile-nav-item">
-          <a href="/books" class="mobile-nav-link active">All Books</a>
+          <router-link to="/books" class="mobile-nav-link block py-2 hover:text-gray-300">All Books</router-link>
         </li>
         <li class="mobile-nav-item">
-          <a href="/contact" class="mobile-nav-link">Contact Us</a>
+          <router-link to="/contact" class="mobile-nav-link block py-2 hover:text-gray-300">Contact Us</router-link>
         </li>
-        <li class="mobile-nav-item mobile-search">
-          <form @submit.prevent="handleSearch" class="mobile-search-form">
-            <input 
-              type="text" 
-              v-model="searchQuery" 
-              placeholder="Search by title or author" 
-              class="mobile-search-input"
+        <li class="mobile-nav-item mobile-search py-2">
+          <form @submit.prevent="handleSearch" class="mobile-search-form relative">
+            <input
+              type="text"
+              v-model="searchQuery"
+              placeholder="Search by title or author"
+              class="mobile-search-input w-full rounded-full px-4 py-2 text-black"
             />
-            <button type="submit" class="mobile-search-button">
-              <i class="fas fa-search"></i>
+            <button type="submit" class="mobile-search-button absolute right-3 top-1/2 transform -translate-y-1/2">
+              <i class="fas fa-search text-gray-500"></i>
             </button>
           </form>
         </li>
         <li class="mobile-nav-item mobile-actions">
-          <a href="/wishlist" class="mobile-action-icon">
-            <i class="fas fa-heart"></i> Wishlist
-          </a>
+          <router-link to="/wishlist" class="mobile-action-icon flex items-center py-2 hover:text-gray-300">
+            <i class="fas fa-heart mr-2"></i> Wishlist
+          </router-link>
         </li>
         <li class="mobile-nav-item mobile-actions">
-          <a href="/cart" class="mobile-action-icon">
-            <i class="fas fa-shopping-cart"></i> Cart
-          </a>
+          <router-link to="/cart" class="mobile-action-icon flex items-center py-2 hover:text-gray-300">
+            <i class="fas fa-shopping-cart mr-2"></i> Cart
+          </router-link>
         </li>
         <li class="mobile-nav-item mobile-actions">
-          <a href="/account" class="mobile-action-icon">
-            <i class="fas fa-user"></i> Account
-          </a>
+          <router-link to="/account" class="mobile-action-icon flex items-center py-2 hover:text-gray-300">
+            <i class="fas fa-user mr-2"></i> Account
+          </router-link>
         </li>
       </ul>
     </nav>
