@@ -29,12 +29,12 @@ const routes = [
     component: DescriptionPage
   },
   {
-    path: '/CheckoutPage',
+    path: '/Checkout',
     name: 'checkout',
     component: CheckoutPageVue
   },
   {
-    path: '/CartPage',
+    path: '/Cart',
     name: 'cart',
     component: CartPageVue
   }
