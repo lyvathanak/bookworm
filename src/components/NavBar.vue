@@ -43,7 +43,7 @@
         <a href="/cart" class="action-icon">
           <i class="fas fa-shopping-cart"></i>
         </a>
-        <a href="/account" class="action-icon">
+        <a href="/auth/signin" class="action-icon">
           <i class="fas fa-user"></i>
         </a>
       </div>
