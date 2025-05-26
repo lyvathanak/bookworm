@@ -5,6 +5,8 @@ import DescriptionPage from '../views/DescriptionPage.vue'
 import WishListPage from '@/views/WishListPage.vue'
 import CheckoutPageVue from '@/views/CheckoutPage.vue'
 import CartPageVue from '@/views/CartPage.vue'
+import AuthorProfile from '@/views/AuthorProfile.vue'
+import BookList from '@/views/BookList.vue'
 
 // import Signup from '../components/SignUp.vue';
 // import Signin from '../components/SignIn.vue';
@@ -40,6 +42,16 @@ const routes = [
     path: '/Cart',
     name: 'cart',
     component: CartPageVue
+  },
+  {
+  path: '/author/james-clear',
+  name: 'author-profile',
+  component: AuthorProfile,
+  },
+  {
+    path: '/author/james-clear/books',
+    name: 'book-list',
+    component: BookList,
   },
 
   { 

@@ -1,216 +1,223 @@
+```vue
 <template>
-    <div class="book-description-page">
-      <div class="breadcrumb">
-        <a href="/home" class="breadcrumb-link home">Home</a>
-        <span class="breadcrumb-separator">/</span>
-        <a href="/home" class="breadcrumb-link">Books</a>
-        <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-current">{{ book.title }}</span>
-      </div>
-      
-      <div class="book-main-content">
-        <div class="book-info">
-          <!-- Rating -->
-          <div class="book-rating">
-            <div class="stars">
-              <span 
-                v-for="i in 5" 
-                :key="i" 
-                :class="getStarClass(i, book.rating)"
-              ></span>
-            </div>
-            <span class="reviews-count">{{ book.reviewsCount }} Reviews</span>
+  <div class="book-description-page">
+    <div class="breadcrumb">
+      <a href="/home" class="breadcrumb-link home">Home</a>
+      <span class="breadcrumb-separator">/</span>
+      <a href="/home" class="breadcrumb-link">Books</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current">{{ book.title }}</span>
+    </div>
+    
+    <div class="book-main-content">
+      <div class="book-info">
+        <!-- Rating -->
+        <div class="book-rating">
+          <div class="stars">
+            <span 
+              v-for="i in 5" 
+              :key="i" 
+              :class="getStarClass(i, book.rating)"
+            ></span>
           </div>
-          
-          <!-- Title -->
-          <h1 class="book-title">{{ book.title }}</h1>
-          
-          <!-- Description - Scrollable -->
-          <div class="book-description-container">
-            <div class="book-description">
-              <p v-for="(paragraph, index) in book.description" :key="index">{{ paragraph }}</p>
-            </div>
-          </div>
-          
-          <!-- Price and Actions -->
-          <div class="book-price">{{ book.price }}</div>
-          
-          <div class="book-actions">
-            <div class="quantity-selector">
-              <button class="quantity-btn decrease" @click="decreaseQuantity">-</button>
-              <input type="text" class="quantity-input" :value="quantity" readonly />
-              <button class="quantity-btn increase" @click="increaseQuantity">+</button>
-            </div>
-            
-            <button class="add-to-cart-btn" @click="addToCart">
-              <span class="cart-icon">🛒</span>
-              ADD TO CART
-            </button>
-            
-            <button 
-              class="wishlist-btn" 
-              :class="{ active: inWishlist }" 
-              @click="toggleWishlist"
-            >
-              <span class="heart-icon">♡</span>
-            </button>
-          </div>
-          
-          <div v-if="showAddedToCart" class="added-to-cart-feedback">
-            Added to cart!
+          <span class="reviews-count">{{ book.reviewsCount }} Reviews</span>
+        </div>
+        
+        <!-- Title -->
+        <h1 class="book-title">{{ book.title }}</h1>
+        
+        <!-- Description - Scrollable -->
+        <div class="book-description-container">
+          <div class="book-description">
+            <p v-for="(paragraph, index) in book.description" :key="index">{{ paragraph }}</p>
           </div>
         </div>
         
-        <!-- Book Cover -->
-        <div class="book-cover">
-          <img :src="book.coverImage" :alt="book.title" class="book-cover-image" />
+        <!-- Price and Actions -->
+        <div class="book-price">{{ book.price }}</div>
+        
+        <div class="book-actions">
+          <div class="quantity-selector">
+            <button class="quantity-btn decrease" @click="decreaseQuantity">-</button>
+            <input type="text" class="quantity-input" :value="quantity" readonly />
+            <button class="quantity-btn increase" @click="increaseQuantity">+</button>
+          </div>
+          
+          <button class="add-to-cart-btn" @click="addToCart">
+            <span class="cart-icon">🛒</span>
+            ADD TO CART
+          </button>
+          
+          <button 
+            class="wishlist-btn" 
+            :class="{ active: inWishlist }" 
+            @click="toggleWishlist"
+          >
+            <span class="heart-icon">♡</span>
+          </button>
+        </div>
+        
+        <div v-if="showAddedToCart" class="added-to-cart-feedback">
+          Added to cart!
         </div>
       </div>
       
-      <div class="book-navigation">
-        <RouterLink 
-          :to="{ name: 'book-description', params: { id: book.id > 1 ? book.id - 1 : books.length }}" 
-          class="book-nav-button prev"
-        >
-          &larr; Previous Book
-        </RouterLink>
-        
-        <RouterLink 
-          :to="{ name: 'book-description', params: { id: book.id < books.length ? book.id + 1 : 1 }}" 
-          class="book-nav-button next"
-        >
-          Next Book &rarr;
-        </RouterLink>
+      <!-- Book Cover -->
+      <div class="book-cover">
+        <img :src="book.coverImage" :alt="book.title" class="book-cover-image" />
       </div>
+    </div>
+    
+    <div class="book-navigation">
+      <RouterLink 
+        :to="{ name: 'book-description', params: { id: book.id > 1 ? book.id - 1 : books.length }}" 
+        class="book-nav-button prev"
+      >
+        ← Previous Book
+      </RouterLink>
       
-      <!-- Book Details -->
-      <div class="book-details-section">
-        <h2 class="section-title">Details</h2>
-        <div class="details-table">
-          <div class="details-row">
-            <div class="details-label">Book Title</div>
-            <div class="details-value">{{ book.title }}</div>
-          </div>
-          <div class="details-row">
-            <div class="details-label">Author</div>
+      <RouterLink 
+        :to="{ name: 'book-description', params: { id: book.id < books.length ? book.id + 1 : 1 }}" 
+        class="book-nav-button next"
+      >
+        Next Book →
+      </RouterLink>
+    </div>
+    
+    <!-- Book Details -->
+    <div class="book-details-section">
+      <h2 class="section-title">Details</h2>
+      <div class="details-table">
+        <div class="details-row">
+          <div class="details-label">Book Title</div>
+          <div class="details-value">{{ book.title }}</div>
+        </div>
+        <div class="details-row">
+          <div class="details-label">Author</div>
+          <router-link
+            :to="{ name: 'author-profile', params: { authorName: formatAuthorName(book.author) } }"
+            class="author-link"
+          >
             <div class="details-value">{{ book.author }}</div>
+          </router-link>
+        </div>
+        <div class="details-row">
+          <div class="details-label">ISBN</div>
+          <div class="details-value">{{ book.isbn }} (ISBN13: {{ book.isbn13 }})</div>
+        </div>
+        <div class="details-row">
+          <div class="details-label">Edition Language</div>
+          <div class="details-value">{{ book.language }}</div>
+        </div>
+        <div class="details-row">
+          <div class="details-label">Book Format</div>
+          <div class="details-value">{{ book.format }}</div>
+        </div>
+        <div class="details-row">
+          <div class="details-label">Date Published</div>
+          <div class="details-value">{{ book.published }}</div>
+        </div>
+        <div class="details-row">
+          <div class="details-label">Publisher</div>
+          <div class="details-value">{{ book.publisher }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Customer Reviews -->
+    <div class="customer-reviews-section">
+      <h2 class="section-title">Customer Reviews</h2>
+      <div class="reviews-summary">
+        <div class="average-rating">
+          <div class="rating-number">{{ book.rating }}</div>
+          <div class="rating-text">out of 5</div>
+        </div>
+        <div class="rating-bars">
+          <div class="rating-bar-row">
+            <span class="rating-label">5</span>
+            <div class="rating-bar-container">
+              <div class="rating-bar" style="width: 65%;"></div>
+            </div>
+            <span class="rating-percentage">65%</span>
           </div>
-          <div class="details-row">
-            <div class="details-label">ISBN</div>
-            <div class="details-value">{{ book.isbn }} (ISBN13: {{ book.isbn13 }})</div>
+          <div class="rating-bar-row">
+            <span class="rating-label">4</span>
+            <div class="rating-bar-container">
+              <div class="rating-bar" style="width: 17%;"></div>
+            </div>
+            <span class="rating-percentage">17%</span>
           </div>
-          <div class="details-row">
-            <div class="details-label">Edition Language</div>
-            <div class="details-value">{{ book.language }}</div>
+          <div class="rating-bar-row">
+            <span class="rating-label">3</span>
+            <div class="rating-bar-container">
+              <div class="rating-bar" style="width: 10%;"></div>
+            </div>
+            <span class="rating-percentage">10%</span>
           </div>
-          <div class="details-row">
-            <div class="details-label">Book Format</div>
-            <div class="details-value">{{ book.format }}</div>
+          <div class="rating-bar-row">
+            <span class="rating-label">2</span>
+            <div class="rating-bar-container">
+              <div class="rating-bar" style="width: 5%;"></div>
+            </div>
+            <span class="rating-percentage">5%</span>
           </div>
-          <div class="details-row">
-            <div class="details-label">Date Published</div>
-            <div class="details-value">{{ book.published }}</div>
-          </div>
-          <div class="details-row">
-            <div class="details-label">Publisher</div>
-            <div class="details-value">{{ book.publisher }}</div>
+          <div class="rating-bar-row">
+            <span class="rating-label">1</span>
+            <div class="rating-bar-container">
+              <div class="rating-bar" style="width: 3%;"></div>
+            </div>
+            <span class="rating-percentage">3%</span>
           </div>
         </div>
       </div>
-      
-      <!-- Customer Reviews -->
-      <div class="customer-reviews-section">
-        <h2 class="section-title">Customer Reviews</h2>
-        <div class="reviews-summary">
-          <div class="average-rating">
-            <div class="rating-number">{{ book.rating }}</div>
-            <div class="rating-text">out of 5</div>
-          </div>
-          <div class="rating-bars">
-            <div class="rating-bar-row">
-              <span class="rating-label">5</span>
-              <div class="rating-bar-container">
-                <div class="rating-bar" style="width: 65%;"></div>
-              </div>
-              <span class="rating-percentage">65%</span>
-            </div>
-            <div class="rating-bar-row">
-              <span class="rating-label">4</span>
-              <div class="rating-bar-container">
-                <div class="rating-bar" style="width: 17%;"></div>
-              </div>
-              <span class="rating-percentage">17%</span>
-            </div>
-            <div class="rating-bar-row">
-              <span class="rating-label">3</span>
-              <div class="rating-bar-container">
-                <div class="rating-bar" style="width: 10%;"></div>
-              </div>
-              <span class="rating-percentage">10%</span>
-            </div>
-            <div class="rating-bar-row">
-              <span class="rating-label">2</span>
-              <div class="rating-bar-container">
-                <div class="rating-bar" style="width: 5%;"></div>
-              </div>
-              <span class="rating-percentage">5%</span>
-            </div>
-            <div class="rating-bar-row">
-              <span class="rating-label">1</span>
-              <div class="rating-bar-container">
-                <div class="rating-bar" style="width: 3%;"></div>
-              </div>
-              <span class="rating-percentage">3%</span>
-            </div>
-          </div>
-        </div>
-        <div class="review-quote">
-          "Resilience, happiness and freedom come from knowing what to care about—and most importantly what not to care about. This is a masterful, philosophical and practical book that will give readers the wisdom to be able to do just that."
-        </div>
+      <div class="review-quote">
+        "Resilience, happiness and freedom come from knowing what to care about—and most importantly what not to care about. This is a masterful, philosophical and practical book that will give readers the wisdom to be able to do just that."
       </div>
-      
-      <!-- Related Books -->
-      <div class="related-books-section">
-        <h2 class="section-title">Related books</h2>
-        <div class="related-books-grid">
-          <div class="related-book" v-for="relatedBook in relatedBooks" :key="relatedBook.id">
-            <div class="related-book-cover">
-              <img :src="relatedBook.coverImage" :alt="relatedBook.title" class="related-book-image" />
-            </div>
-            <div class="related-book-info">
-              <div class="related-book-rating">{{ relatedBook.rating }}</div>
-              <h3 class="related-book-title">{{ relatedBook.title }}</h3>
-              <p class="related-book-author">{{ relatedBook.author }}</p>
-              <p class="related-book-price">{{ relatedBook.price }}</p>
-            </div>
+    </div>
+    
+    <!-- Related Books -->
+    <div class="related-books-section">
+      <h2 class="section-title">Related books</h2>
+      <div class="related-books-grid">
+        <div class="related-book" v-for="relatedBook in relatedBooks" :key="relatedBook.id">
+          <div class="related-book-cover">
+            <img :src="relatedBook.coverImage" :alt="relatedBook.title" class="related-book-image" />
           </div>
-        </div>
-      </div>
-      
-      <!-- Best Selling - Horizontally Scrollable -->
-      <div class="best-selling-section">
-        <h2 class="section-title">Best selling</h2>
-        <div class="best-selling-container">
-          <div class="best-selling-books">
-            <div class="best-selling-book" v-for="bestSellingBook in bestSellingBooks" :key="bestSellingBook.id">
-              <div class="best-selling-book-cover">
-                <img :src="bestSellingBook.coverImage" :alt="bestSellingBook.title" class="book-cover-image" />
-              </div>
-              <div class="book-category">{{ bestSellingBook.category }}</div>
-              <div class="book-rating">{{ bestSellingBook.rating }}</div>
-              <h3 class="best-selling-book-title">{{ bestSellingBook.title }}</h3>
-              <p class="best-selling-book-author">{{ bestSellingBook.author }}</p>
-              <p class="best-selling-book-price">{{ bestSellingBook.price }}</p>
-            </div>
+          <div class="related-book-info">
+            <div class="related-book-rating">{{ relatedBook.rating }}</div>
+            <h3 class="related-book-title">{{ relatedBook.title }}</h3>
+            <p class="related-book-author">{{ relatedBook.author }}</p>
+            <p class="related-book-price">{{ relatedBook.price }}</p>
           </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script setup>
+    
+    <!-- Best Selling - Horizontally Scrollable -->
+    <div class="best-selling-section">
+      <h2 class="section-title">Best selling</h2>
+      <div class="best-selling-container">
+        <div class="best-selling-books">
+          <div class="best-selling-book" v-for="bestSellingBook in bestSellingBooks" :key="bestSellingBook.id">
+            <div class="best-selling-book-cover">
+              <img :src="bestSellingBook.coverImage" :alt="bestSellingBook.title" class="book-cover-image" />
+            </div>
+            <div class="book-category">{{ bestSellingBook.category }}</div>
+            <div class="book-rating">{{ bestSellingBook.rating }}</div>
+            <h3 class="best-selling-book-title">{{ bestSellingBook.title }}</h3>
+            <p class="best-selling-book-author">{{ bestSellingBook.author }}</p>
+            <p class="best-selling-book-price">{{ bestSellingBook.price }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import book1Image from '@/assets/book1.png'
 import book2Image from '@/assets/book2.png'
 import book3Image from '@/assets/book3.png'
@@ -613,480 +620,496 @@ const loadCartItems = () => {
   cartItems.value = JSON.parse(localStorage.getItem('cartItems') || '[]')
 }
 
+// Helper function to format author name for the route
+const formatAuthorName = (author) => {
+  return author.toLowerCase().replace(/\s+/g, '-');
+}
+
 // Run initialization functions
 checkWishlistStatus()
 loadCartItems()
-  </script>
-  
-  <style scoped>
-  .book-description-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+</script>
+
+<style scoped>
+.book-description-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Breadcrumb Styles */
+.breadcrumb {
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.breadcrumb-link {
+  text-decoration: none;
+}
+
+.home {
+  color: #e6d430;
+}
+
+.breadcrumb-separator {
+  margin: 0 5px;
+  color: #666;
+}
+
+.breadcrumb-current {
+  color: #666;
+}
+
+/* Main Book Content Styles */
+.book-main-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.book-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.book-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.stars {
+  display: flex;
+  margin-right: 10px;
+}
+
+.star {
+  font-size: 20px;
+  color: #ccc;
+}
+
+.reviews-count {
+  color: #666;
+  font-size: 14px;
+}
+
+.book-title {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+/* Scrollable Description */
+.book-description-container {
+  height: 200px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  border: 1px solid #eee;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.book-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555;
+}
+
+.book-description p {
+  margin-bottom: 10px;
+}
+
+.book-price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #e6d430;
+  margin-bottom: 20px;
+}
+
+.book-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.quantity-btn {
+  background: #f5f5f5;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.quantity-input {
+  width: 40px;
+  text-align: center;
+  border: none;
+  padding: 8px 0;
+}
+
+.add-to-cart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cart-icon {
+  margin-right: 8px;
+}
+
+.wishlist-btn {
+  background: #f5f5f5;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.wishlist-btn.active {
+  background-color: #e6d430;
+}
+
+.heart-icon {
+  font-size: 20px;
+  color: #666;
+}
+
+.book-cover {
+  flex: 0 0 300px;
+}
+
+.book-cover-image {
+  width: 100%;
+  height: 450px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.book-cover-placeholder {
+  width: 100%;
+  height: 450px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+  color: #999;
+}
+
+/* Book Details Styles */
+.book-details-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.details-table {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.details-row {
+  display: flex;
+}
+
+.details-label {
+  flex: 0 0 150px;
+  background-color: #0a1f44;
+  color: white;
+  padding: 10px 15px;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.details-value {
+  flex: 1;
+  padding: 10px 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.author-link {
+  text-decoration: none;
+  color: #666;
+}
+
+.author-link:hover .details-value {
+  color: #333;
+  text-decoration: underline;
+}
+
+.details-row:last-child .details-label,
+.details-row:last-child .details-value {
+  border-bottom: none;
+}
+
+/* Customer Reviews Styles */
+.customer-reviews-section {
+  margin-bottom: 40px;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 4px;
+}
+
+.reviews-summary {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.average-rating {
+  flex: 0 0 100px;
+  text-align: center;
+  padding-right: 20px;
+  border-right: 1px solid #ddd;
+}
+
+.rating-number {
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+}
+
+.rating-text {
+  font-size: 14px;
+  color: #666;
+}
+
+.rating-bars {
+  flex: 1;
+  padding-left: 20px;
+}
+
+.rating-bar-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.rating-label {
+  flex: 0 0 20px;
+  text-align: center;
+}
+
+.rating-bar-container {
+  flex: 1;
+  height: 15px;
+  background-color: #eee;
+  margin: 0 10px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.rating-bar {
+  height: 100%;
+  background-color: #e6d430;
+}
+
+.rating-percentage {
+  flex: 0 0 40px;
+  font-size: 12px;
+  color: #666;
+}
+
+.review-quote {
+  font-style: italic;
+  color: #666;
+  padding: 15px;
+  border-left: 3px solid #e6d430;
+  background-color: white;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Related Books Styles - Updated for horizontal scrolling */
+.related-books-section {
+  margin-bottom: 40px;
+}
+
+.related-books-grid {
+  display: flex;
+  overflow-x: auto;
+  gap: 20px;
+  padding-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.related-book {
+  flex: 0 0 220px; /* Fixed width, no shrinking */
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.related-book:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.related-book-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin-bottom: 10px;
+}
+
+/* Best Selling Styles - Horizontally Scrollable */
+.best-selling-section {
+  margin-bottom: 40px;
+}
+
+.best-selling-container {
+  overflow-x: auto;
+  padding-bottom: 10px; /* Space for scrollbar */
+}
+
+.best-selling-books {
+  display: flex;
+  gap: 20px;
+  min-width: min-content;
+}
+
+.best-selling-book {
+  flex: 0 0 220px;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.best-selling-book-cover {
+  margin-bottom: 10px;
+}
+
+.book-category {
+  display: inline-block;
+  background-color: #333;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.book-rating {
+  display: inline-block;
+  background-color: #e6d430;
+  color: #333;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.best-selling-book-title {
+  font-size: 16px;
+  margin: 5px 0;
+  font-weight: 600;
+}
+
+.best-selling-book-author {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 5px 0;
+}
+
+.best-selling-book-price {
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+/* Navigation Styles */
+.book-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.book-nav-button {
+  padding: 8px 16px;
+  background-color: #0a1f44;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.book-nav-button:hover {
+  background-color: #162f5a;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .related-books-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
-  
-  /* Breadcrumb Styles */
-  .breadcrumb {
-    margin-bottom: 20px;
-    font-size: 14px;
-  }
-  
-  .breadcrumb-link {
-    text-decoration: none;
-  }
-  
-  .home {
-    color: #e6d430;
-  }
-  
-  .breadcrumb-separator {
-    margin: 0 5px;
-    color: #666;
-  }
-  
-  .breadcrumb-current {
-    color: #666;
-  }
-  
-  /* Main Book Content Styles */
+}
+
+@media (max-width: 768px) {
   .book-main-content {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 30px;
-    margin-bottom: 40px;
-  }
-  
-  .book-info {
-    flex: 1;
-    min-width: 300px;
-  }
-  
-  .book-rating {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .stars {
-    display: flex;
-    margin-right: 10px;
-  }
-  
-  .star {
-    font-size: 20px;
-    color: #ccc;
-  }
-  
-  .reviews-count {
-    color: #666;
-    font-size: 14px;
-  }
-  
-  .book-title {
-    font-size: 24px;
-    margin-bottom: 15px;
-    color: #333;
-  }
-  
-  /* Scrollable Description */
-  .book-description-container {
-    height: 200px;
-    overflow-y: auto;
-    margin-bottom: 20px;
-    border: 1px solid #eee;
-    padding: 10px;
-    border-radius: 4px;
-  }
-  
-  .book-description {
-    font-size: 14px;
-    line-height: 1.6;
-    color: #555;
-  }
-  
-  .book-description p {
-    margin-bottom: 10px;
-  }
-  
-  .book-price {
-    font-size: 24px;
-    font-weight: bold;
-    color: #e6d430;
-    margin-bottom: 20px;
-  }
-  
-  .book-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .quantity-selector {
-    display: flex;
-    align-items: center;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  
-  .quantity-btn {
-    background: #f5f5f5;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-  }
-  
-  .quantity-input {
-    width: 40px;
-    text-align: center;
-    border: none;
-    padding: 8px 0;
-  }
-  
-  .add-to-cart-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #333;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  
-  .cart-icon {
-    margin-right: 8px;
-  }
-  
-  .wishlist-btn {
-    background: #f5f5f5;
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  
-  .wishlist-btn.active {
-    background-color: #e6d430;
-  }
-  
-  .heart-icon {
-    font-size: 20px;
-    color: #666;
+    flex-direction: column-reverse;
   }
   
   .book-cover {
-    flex: 0 0 300px;
-  }
-  
-  .book-cover-image {
-    width: 100%;
-    height: 450px;
-    object-fit: cover;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-  
-  .book-cover-placeholder {
-    width: 100%;
-    height: 450px;
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-style: italic;
-    color: #999;
-  }
-  
-  /* Book Details Styles */
-  .book-details-section {
-    margin-bottom: 40px;
-  }
-  
-  .section-title {
-    font-size: 20px;
-    margin-bottom: 15px;
-    color: #333;
-  }
-  
-  .details-table {
-    border: 1px solid #eee;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  
-  .details-row {
-    display: flex;
-  }
-  
-  .details-label {
-    flex: 0 0 150px;
-    background-color: #0a1f44;
-    color: white;
-    padding: 10px 15px;
-    font-weight: bold;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .details-value {
-    flex: 1;
-    padding: 10px 15px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .details-row:last-child .details-label,
-  .details-row:last-child .details-value {
-    border-bottom: none;
-  }
-  
-  /* Customer Reviews Styles */
-  .customer-reviews-section {
-    margin-bottom: 40px;
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 4px;
-  }
-  
-  .reviews-summary {
-    display: flex;
     margin-bottom: 20px;
   }
   
+  .related-books-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .related-books-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .reviews-summary {
+    flex-direction: column;
+  }
+  
   .average-rating {
-    flex: 0 0 100px;
-    text-align: center;
-    padding-right: 20px;
-    border-right: 1px solid #ddd;
-  }
-  
-  .rating-number {
-    font-size: 36px;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .rating-text {
-    font-size: 14px;
-    color: #666;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    padding-right: 0;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
   }
   
   .rating-bars {
-    flex: 1;
-    padding-left: 20px;
+    padding-left: 0;
   }
-  
-  .rating-bar-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-  }
-  
-  .rating-label {
-    flex: 0 0 20px;
-    text-align: center;
-  }
-  
-  .rating-bar-container {
-    flex: 1;
-    height: 15px;
-    background-color: #eee;
-    margin: 0 10px;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  
-  .rating-bar {
-    height: 100%;
-    background-color: #e6d430;
-  }
-  
-  .rating-percentage {
-    flex: 0 0 40px;
-    font-size: 12px;
-    color: #666;
-  }
-  
-  .review-quote {
-    font-style: italic;
-    color: #666;
-    padding: 15px;
-    border-left: 3px solid #e6d430;
-    background-color: white;
-    border-radius: 0 4px 4px 0;
-  }
-  
-  /* Related Books Styles - Updated for horizontal scrolling */
-  .related-books-section {
-    margin-bottom: 40px;
-  }
-  
-  .related-books-grid {
-    display: flex;
-    overflow-x: auto;
-    gap: 20px;
-    padding-bottom: 10px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-  }
-  
-  .related-book {
-    flex: 0 0 220px; /* Fixed width, no shrinking */
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  
-  .related-book:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  }
-  
-  .related-book-image {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    margin-bottom: 10px;
-  }
-  
-  /* Best Selling Styles - Horizontally Scrollable */
-  .best-selling-section {
-    margin-bottom: 40px;
-  }
-  
-  .best-selling-container {
-    overflow-x: auto;
-    padding-bottom: 10px; /* Space for scrollbar */
-  }
-  
-  .best-selling-books {
-    display: flex;
-    gap: 20px;
-    min-width: min-content;
-  }
-  
-  .best-selling-book {
-    flex: 0 0 220px;
-    padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-  }
-  
-  .best-selling-book-cover {
-    margin-bottom: 10px;
-  }
-  
-  .book-category {
-    display: inline-block;
-    background-color: #333;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    margin-bottom: 5px;
-  }
-  
-  .book-rating {
-    display: inline-block;
-    background-color: #e6d430;
-    color: #333;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-left: 5px;
-  }
-  
-  .best-selling-book-title {
-    font-size: 16px;
-    margin: 5px 0;
-    font-weight: 600;
-  }
-  
-  .best-selling-book-author {
-    font-size: 14px;
-    color: #666;
-    margin: 0 0 5px 0;
-  }
-  
-  .best-selling-book-price {
-    font-weight: bold;
-    color: #333;
-    margin: 0;
-  }
-  
-  /* Navigation Styles */
-  .book-navigation {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-  }
-  
-  .book-nav-button {
-    padding: 8px 16px;
-    background-color: #0a1f44;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-  }
-  
-  .book-nav-button:hover {
-    background-color: #162f5a;
-  }
-  
-  /* Responsive Styles */
-  @media (max-width: 1024px) {
-    .related-books-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .book-main-content {
-      flex-direction: column-reverse;
-    }
-    
-    .book-cover {
-      margin-bottom: 20px;
-    }
-    
-    .related-books-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .related-books-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .reviews-summary {
-      flex-direction: column;
-    }
-    
-    .average-rating {
-      border-right: none;
-      border-bottom: 1px solid #ddd;
-      padding-right: 0;
-      padding-bottom: 15px;
-      margin-bottom: 15px;
-    }
-    
-    .rating-bars {
-      padding-left: 0;
-    }
-  }
-  </style>
+}
+</style>
+```
