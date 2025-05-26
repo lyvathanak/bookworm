@@ -22,12 +22,13 @@
       
       <!-- Search Bar -->
       <div class="search-container">
-        <form @submit.prevent="handleSearch" class="search-form">
+        <form class="search-form">
           <input 
             type="text" 
             v-model="searchQuery" 
             placeholder="Search by title or author" 
             class="search-input"
+            @input="updateSearch"
           />
           <button type="submit" class="search-button">
             <i class="fas fa-search"></i>
@@ -73,12 +74,13 @@
           <a href="/contact" class="mobile-nav-link">Contact Us</a>
         </li>
         <li class="mobile-nav-item mobile-search">
-          <form @submit.prevent="handleSearch" class="mobile-search-form">
+          <form class="mobile-search-form">
             <input 
               type="text" 
               v-model="searchQuery" 
               placeholder="Search by title or author" 
               class="mobile-search-input"
+              @input="updateSearch"
             />
             <button type="submit" class="mobile-search-button">
               <i class="fas fa-search"></i>
@@ -124,12 +126,9 @@ const isLoggedIn = ref(false) // Set this based on your authentication state
 const showUserDropdown = ref(false)
 const showMobileUserDropdown = ref(false)
 
-const handleSearch = () => {
-  console.log('Searching for:', searchQuery.value)
-}
-
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value
+// Update search query in route on input
+const updateSearch = () => {
+  router.push({ path: '/home', query: { search: searchQuery.value.trim() || undefined } })
 }
 
 // Toggle user dropdown
@@ -178,7 +177,6 @@ const logout = () => {
   router.push('/')
 }
 </script>
-
 <style scoped>
 .header {
   background-color: #0a1f44;

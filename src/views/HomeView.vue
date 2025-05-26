@@ -1,196 +1,216 @@
 <template>
-    <div class="home-view">
-      <!-- Book Grid -->
-      <div class="book-grid">
-        <!-- Display books from the array using v-for -->
-        <div class="book-item" v-for="book in displayedBooks" :key="book.id">
-          <div class="book-cover" @click="goToBookDetail(book.id)">
-            <img :src="book.coverImage" :alt="book.title" class="book-cover-img">
-          </div>
-          <h3 class="book-title">{{ book.title }}</h3>
-          <p class="book-author">{{ book.author }}</p>
-          <div class="book-rating" v-if="book.rating">
-            <span v-for="i in 5" :key="i" 
-              :class="['star', getStarClass(i, book.rating)]">★</span>
-          </div>
-          <div class="book-price-cart">
-            <span class="book-price">{{ book.price }}</span>
-            <button class="add-to-cart-btn" @click="addToCart(book)">Add to cart</button>
-          </div>
+  <div class="home-view">
+    <!-- Book Grid -->
+    <div class="book-grid">
+      <!-- Display books from the filtered array using v-for -->
+      <div class="book-item" v-for="book in displayedBooks" :key="book.id">
+        <div class="book-cover" @click="goToBookDetail(book.id)">
+          <img :src="book.coverImage" :alt="book.title" class="book-cover-img">
+        </div>
+        <h3 class="book-title">{{ book.title }}</h3>
+        <p class="book-author">{{ book.author }}</p>
+        <div class="book-rating" v-if="book.rating">
+          <span v-for="i in 5" :key="i" 
+            :class="['star', getStarClass(i, book.rating)]">★</span>
+        </div>
+        <div class="book-price-cart">
+          <span class="book-price">{{ book.price }}</span>
+          <button class="add-to-cart-btn" @click="addToCart(book)">Add to cart</button>
         </div>
       </div>
-      
-      <!-- More Button - show only if there are more books to display -->
-      <div class="more-container" v-if="hasMoreBooks">
-        <button class="more-btn" @click="loadMore">More</button>
-      </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, computed } from 'vue'
-  import { useRouter } from 'vue-router'
-  import book1Image from '@/assets/book1.png'
-  import book2Image from '@/assets/book2.png'
-  import book3Image from '@/assets/book3.png'
-  import book4Image from '@/assets/book4.png'
-  import book5Image from '@/assets/book5.png'
-  import book6Image from '@/assets/book6.png'
-  import book7Image from '@/assets/book7.png'
-  import book8Image from '@/assets/book8.png'
-  
-  const router = useRouter()
-  
-  // Define the complete list of books
-  const allBooks = ref([
-    {
-      id: 1,
-      title: "The Subtle Art of Not Giving a F*ck",
-      author: "Mark Manson",
-      price: "$11.63",
-      rating: 4.0,
-      coverImage: book6Image
-    },
-    {
-      id: 2,
-      title: "Atomic Habits",
-      author: "James Clear",
-      price: "$14.99",
-      rating: 4.7,
-      coverImage: book7Image
-    },
-    {
-      id: 3,
-      title: "The Silent Patient",
-      author: "Alex Michaelides",
-      price: "$12.99",
-      rating: 4.5,
-      coverImage: book1Image
-    },
-    {
-      id: 4,
-      title: "Where the Crawdads Sing",
-      author: "Delia Owens",
-      price: "$15.49",
-      rating: 4.8,
-      coverImage: book2Image
-    },
-    {
-      id: 5,
-      title: "Educated",
-      author: "Tara Westover",
-      price: "$13.99",
-      rating: 4.6,
-      coverImage: book3Image
-    },
-    {
-      id: 6,
-      title: "Becoming",
-      author: "Michelle Obama",
-      price: "$18.99",
-      rating: 4.9,
-      coverImage: book4Image
-    },
-    {
-      id: 7,
-      title: "The Midnight Library",
-      author: "Matt Haig",
-      price: "$16.75",
-      rating: 4.3,
-      coverImage: book5Image
-    },
-    {
-      id: 8,
-      title: "Project Hail Mary",
-      author: "Andy Weir",
-      price: "$17.99",
-      rating: 4.7,
-      coverImage: book8Image
-    },
-    // Additional books that will be loaded when clicking "More"
-    {
-      id: 9,
-      title: "Treasure Island",
-      author: "Robert L. Stevenson",
-      price: "$9.99",
-      rating: 4.4,
-      coverImage: book2Image
-    },
-    {
-      id: 10,
-      title: "They Both Die at the End",
-      author: "Adam Silvera",
-      price: "$13.99",
-      rating: 4.5,
-      coverImage: book5Image
-    },
-    {
-      id: 11,
-      title: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      price: "$10.99",
-      rating: 4.9,
-      coverImage: book3Image
-    },
-    {
-      id: 12,
-      title: "1984",
-      author: "George Orwell",
-      price: "$11.49",
-      rating: 4.8,
-      coverImage: book8Image
-    }
-  ]);
-  
-  // Initialize to display only the first 8 books
-  const displayCount = ref(8);
-  
-  // Computed property for books to display
-  const displayedBooks = computed(() => {
-    return allBooks.value.slice(0, displayCount.value);
-  });
-  
-  // Computed property to check if there are more books to display
-  const hasMoreBooks = computed(() => {
-    return displayCount.value < allBooks.value.length;
-  });
-  
-  // Cart functionality
-  const cart = ref([])
-  
-  const addToCart = (book) => {
-    cart.value.push(book)
-    console.log(`Added "${book.title}" to cart`)
-    console.log('Current cart:', cart.value)
-    
-    // Show a confirmation message
-    alert(`"${book.title}" added to cart!`)
+      
+    <!-- More Button - show only if there are more books to display -->
+    <div class="more-container" v-if="hasMoreBooks">
+      <button class="more-btn" @click="loadMore">More</button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import book1Image from '@/assets/book1.png'
+import book2Image from '@/assets/book2.png'
+import book3Image from '@/assets/book3.png'
+import book4Image from '@/assets/book4.png'
+import book5Image from '@/assets/book5.png'
+import book6Image from '@/assets/book6.png'
+import book7Image from '@/assets/book7.png'
+import book8Image from '@/assets/book8.png'
+
+const router = useRouter()
+const route = useRoute()
+
+// Define the complete list of books
+const allBooks = ref([
+  {
+    id: 1,
+    title: "The Subtle Art of Not Giving a F*ck",
+    author: "Mark Manson",
+    price: "$11.63",
+    rating: 4.0,
+    coverImage: book6Image
+  },
+  {
+    id: 2,
+    title: "Atomic Habits",
+    author: "James Clear",
+    price: "$14.99",
+    rating: 4.7,
+    coverImage: book7Image
+  },
+  {
+    id: 3,
+    title: "The Silent Patient",
+    author: "Alex Michaelides",
+    price: "$12.99",
+    rating: 4.5,
+    coverImage: book1Image
+  },
+  {
+    id: 4,
+    title: "Where the Crawdads Sing",
+    author: "Delia Owens",
+    price: "$15.49",
+    rating: 4.8,
+    coverImage: book2Image
+  },
+  {
+    id: 5,
+    title: "Educated",
+    author: "Tara Westover",
+    price: "$13.99",
+    rating: 4.6,
+    coverImage: book3Image
+  },
+  {
+    id: 6,
+    title: "Becoming",
+    author: "Michelle Obama",
+    price: "$18.99",
+    rating: 4.9,
+    coverImage: book4Image
+  },
+  {
+    id: 7,
+    title: "The Midnight Library",
+    author: "Matt Haig",
+    price: "$16.75",
+    rating: 4.3,
+    coverImage: book5Image
+  },
+  {
+    id: 8,
+    title: "Project Hail Mary",
+    author: "Andy Weir",
+    price: "$17.99",
+    rating: 4.7,
+    coverImage: book8Image
+  },
+  {
+    id: 9,
+    title: "Treasure Island",
+    author: "Robert L. Stevenson",
+    price: "$9.99",
+    rating: 4.4,
+    coverImage: book2Image
+  },
+  {
+    id: 10,
+    title: "They Both Die at the End",
+    author: "Adam Silvera",
+    price: "$13.99",
+    rating: 4.5,
+    coverImage: book5Image
+  },
+  {
+    id: 11,
+    title: "To Kill a Mockingbird",
+    author: "Harper Lee",
+    price: "$10.99",
+    rating: 4.9,
+    coverImage: book3Image
+  },
+  {
+    id: 12,
+    title: "1984",
+    author: "George Orwell",
+    price: "$11.49",
+    rating: 4.8,
+    coverImage: book8Image
   }
-  
-  // Function to handle book click - navigate to book detail page
-  const goToBookDetail = (bookId) => {
-    router.push({ name: 'book-description', params: { id: bookId } });
+]);
+
+// Filter books based on search query from route (use computed for reactivity)
+const filteredBooks = computed(() => {
+  const query = (route.query.search || '').toLowerCase().trim();
+
+  console.log('Search Query:', query); // Debugging
+  console.log('All Books:', allBooks.value); // Debugging
+
+  const filtered = allBooks.value.filter(book =>
+    book.title.toLowerCase().includes(query) ||
+    book.author.toLowerCase().includes(query)
+  );
+
+  console.log('Filtered Books:', filtered); // Debugging
+  return filtered;
+});
+
+const displayCount = ref(8);
+
+// Reset displayCount when search query changes
+onMounted(() => {
+  if (route.query.search) {
+    displayCount.value = filteredBooks.value.length; // Show all matching books
   }
-  
-  // Load more functionality - increase the number of displayed books
-  const loadMore = () => {
-    displayCount.value += 4; // Load 4 more books
-    if (displayCount.value > allBooks.value.length) {
-      displayCount.value = allBooks.value.length; // Don't exceed the array length
-    }
+});
+
+// Computed property for books to display
+const displayedBooks = computed(() => {
+  return filteredBooks.value.slice(0, displayCount.value);
+});
+
+// Computed property to check if there are more books to display
+const hasMoreBooks = computed(() => {
+  return displayCount.value < filteredBooks.value.length;
+});
+
+// Cart functionality
+const cart = ref([]);
+
+const addToCart = (book) => {
+  cart.value.push(book);
+  console.log(`Added "${book.title}" to cart`);
+  console.log('Current cart:', cart.value);
+  alert(`"${book.title}" added to cart!`);
+};
+
+// Function to handle book click - navigate to book detail page
+const goToBookDetail = (bookId) => {
+  router.push({ name: 'book-description', params: { id: bookId } });
+};
+
+// Load more functionality - increase the number of displayed books
+const loadMore = () => {
+  displayCount.value += 4; // Load 4 more books
+  if (displayCount.value > filteredBooks.value.length) {
+    displayCount.value = filteredBooks.value.length; // Don't exceed the array length
   }
-  
-  // Helper function to determine star class based on rating
-  const getStarClass = (position, rating) => {
-    if (rating >= position) {
-      return 'filled';
-    } else if (rating >= position - 0.5) {
-      return 'half-filled';
-    } else {
-      return '';
-    }
+};
+
+// Helper function to determine star class based on rating
+const getStarClass = (position, rating) => {
+  if (rating >= position) {
+    return 'filled';
+  } else if (rating >= position - 0.5) {
+    return 'half-filled';
+  } else {
+    return '';
   }
-  </script>
+};
+</script>
   
   <style scoped>
   .home-view {
