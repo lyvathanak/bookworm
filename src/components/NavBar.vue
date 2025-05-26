@@ -35,7 +35,7 @@
         </form>
       </div>
       
-      <!-- User Actions -->
+      <!-- User Actions - Updated with dropdown -->
       <div class="user-actions">
         <a href="/wishlist" class="action-icon">
           <i class="fas fa-heart"></i>
@@ -43,9 +43,18 @@
         <a href="/cart" class="action-icon">
           <i class="fas fa-shopping-cart"></i>
         </a>
-        <a href="/auth/signin" class="action-icon">
-          <i class="fas fa-user"></i>
-        </a>
+        
+        <!-- User icon with dropdown -->
+        <div class="user-dropdown">
+          <span class="action-icon" @click="toggleUserDropdown">
+            <i class="fas fa-user"></i>
+          </span>
+          <div class="dropdown-menu" v-show="showUserDropdown">
+            <router-link to="/auth/signin" class="dropdown-item">Sign In</router-link>
+            <router-link to="/auth/signup" class="dropdown-item">Sign Up</router-link>
+            <a href="#" @click.prevent="logout" class="dropdown-item logout">Log Out</a>
+          </div>
+        </div>
       </div>
 
       <!-- Mobile Menu Toggle -->
@@ -87,9 +96,16 @@
           </a>
         </li>
         <li class="mobile-nav-item mobile-actions">
-          <a href="/account" class="mobile-action-icon">
-            <i class="fas fa-user"></i> Account
-          </a>
+          <div class="mobile-user-dropdown">
+            <span class="mobile-action-icon" @click="toggleMobileUserDropdown">
+              <i class="fas fa-user"></i> Account
+            </span>
+            <div class="mobile-dropdown-menu" v-show="showMobileUserDropdown">
+              <router-link to="/auth/signin" class="dropdown-item">Sign In</router-link>
+              <router-link to="/auth/signup" class="dropdown-item">Sign Up</router-link>
+              <a href="#" @click.prevent="logout" class="dropdown-item logout">Log Out</a>
+            </div>
+          </div>
         </li>
       </ul>
     </nav>
@@ -98,9 +114,15 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const searchQuery = ref('')
 const isMenuOpen = ref(false)
+const isLoggedIn = ref(false) // Set this based on your authentication state
+const showUserDropdown = ref(false)
+const showMobileUserDropdown = ref(false)
 
 const handleSearch = () => {
   console.log('Searching for:', searchQuery.value)
@@ -108,6 +130,52 @@ const handleSearch = () => {
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
+}
+
+// Toggle user dropdown
+const toggleUserDropdown = () => {
+  showUserDropdown.value = !showUserDropdown.value
+  if (showUserDropdown.value) {
+    // Close on click outside
+    setTimeout(() => {
+      document.addEventListener('click', closeUserDropdown)
+    }, 0)
+  }
+}
+
+// Toggle mobile user dropdown
+const toggleMobileUserDropdown = () => {
+  showMobileUserDropdown.value = !showMobileUserDropdown.value
+}
+
+// Close dropdown when clicked outside
+const closeUserDropdown = (event) => {
+  if (!event.target.closest('.user-dropdown')) {
+    showUserDropdown.value = false
+    document.removeEventListener('click', closeUserDropdown)
+  }
+}
+
+// Logout function
+const logout = () => {
+  // Clear user data from localStorage
+  localStorage.removeItem('user')
+  localStorage.removeItem('token')
+  localStorage.removeItem('wishlist')
+  localStorage.removeItem('cartItems')
+  
+  // Update login state
+  isLoggedIn.value = false
+  
+  // Close dropdowns
+  showUserDropdown.value = false
+  showMobileUserDropdown.value = false
+  
+  // Show confirmation
+  alert('You have been logged out successfully')
+  
+  // Redirect to home
+  router.push('/')
 }
 </script>
 
@@ -310,6 +378,79 @@ const toggleMenu = () => {
 
 .mobile-action-icon i {
   width: 20px;
+}
+
+/* Dropdown styles */
+.user-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  min-width: 180px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  padding: 8px 0;
+  z-index: 1000;
+  margin-top: 10px;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 10px 16px;
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-item.logout {
+  color: #e74c3c;
+  border-top: 1px solid #eee;
+  margin-top: 5px;
+  padding-top: 10px;
+}
+
+.dropdown-item.logout:hover {
+  background-color: #fee;
+}
+
+/* Mobile dropdown styles */
+.mobile-user-dropdown {
+  position: relative;
+}
+
+.mobile-dropdown-menu {
+  background-color: #0a1f44;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin: 10px -20px 0;
+  padding: 10px 0;
+}
+
+.mobile-dropdown-menu .dropdown-item {
+  padding: 10px 40px;
+  color: white;
+}
+
+.mobile-dropdown-menu .dropdown-item:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.mobile-dropdown-menu .dropdown-item.logout {
+  color: #ff6b6b;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.mobile-dropdown-menu .dropdown-item.logout:hover {
+  background-color: rgba(255,0,0,0.1);
 }
 
 /* Responsive Media Queries */

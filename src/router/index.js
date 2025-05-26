@@ -41,26 +41,27 @@ const routes = [
     name: 'cart',
     component: CartPageVue
   },
-
-  { 
+  {
     path: '/auth',
     component: AuthPage,
     children: [
-    {
-      path:'',
-      name: 'Authentication',
-      component: AuthPage,
-      children:[
-
-        { path: 'signin', component: () => import('../components/SignIn.vue') },
-        { path: 'signup', component: () => import('../components/SignUp.vue') },
-        { path: '/', redirect: '/signin' },  // default route
-      ]
-    }
+      {
+        path: 'signin',
+        name: 'signin',
+        component: () => import('../components/SignIn.vue')
+      },
+      {
+        path: 'signup',
+        name: 'signup',
+        component: () => import('../components/SignUp.vue')
+      },
+      {
+        path: '',
+        redirect: '/auth/signin'
+      }
     ]
   }
 ]
-
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),

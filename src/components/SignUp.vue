@@ -1,6 +1,13 @@
 <template>
+  <div class="singUp-page">
+    <div class="breadcrumb">
+      <a href="/" class="breadcrumb-link home">Home</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current">Sign Up</span>
+    </div>
+  </div>
+
   <div class="auth-container">
-    <button class="back-button" @click="$router.back()">←</button>
 
     <div class="logo-section">
       <img src="../assets/bookworm.png" alt="Bookworm Logo" class="logo" />
@@ -49,9 +56,9 @@ export default {
     handleSignup() {
       // Add your signup API call here
       console.log('Signup data:', this.firstName, this.lastName, this.dob, this.email, this.password);
-      alert('Signup function triggered');
-      // After signup success, redirect to login or dashboard
-      this.$router.push('/signin');
+      alert('Sign-up successful! Please sign in with your new account.');
+      // After signup success, redirect to signin
+      this.$router.push('/auth/signin');
     },
     socialLogin(provider) {
       alert(`Social login with ${provider} clicked`);
@@ -61,7 +68,35 @@ export default {
 };
 </script>
 
-<style scoped>.auth-container {
+<style scoped>
+.signUp-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.breadcrumb {
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.breadcrumb-link {
+  text-decoration: none;
+}
+
+.home {
+  color: #e6d430;
+}
+
+.breadcrumb-separator {
+  margin: 0 5px;
+  color: #666;
+}
+
+.breadcrumb-current {
+  color: #666;
+}
+.auth-container {
   max-width: 512px;
   margin: auto;
   height: 100vh; /* full viewport height */

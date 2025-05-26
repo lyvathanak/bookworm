@@ -76,8 +76,7 @@
     display: flex;
     justify-content: center;
     padding: 20px 0;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    margin: 0 auto;
     cursor: pointer;
   }
   
