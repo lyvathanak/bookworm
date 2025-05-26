@@ -5,11 +5,14 @@ import DescriptionPage from '../views/DescriptionPage.vue'
 import WishListPage from '@/views/WishListPage.vue'
 import CheckoutPageVue from '@/views/CheckoutPage.vue'
 import CartPageVue from '@/views/CartPage.vue'
-
-// import Signup from '../components/SignUp.vue';
-// import Signin from '../components/SignIn.vue';
-
 import AuthPage from '@/views/AuthPage.vue'
+import ProfileView from '../views/ProfileView.vue'
+import ProfileInfo from '../components/ProfileInfo.vue'
+import UserOrders from '../components/UserOrders.vue'
+import UserWishlist from '../components/UserWishlist.vue'
+import UserAddress from '../components/UserAddress.vue'
+import ChangePassword from '../components/ChangePassword.vue'
+
 const routes = [
   {
     path: '/',
@@ -58,6 +61,37 @@ const routes = [
       {
         path: '',
         redirect: '/auth/signin'
+      }
+    ]
+  },
+  {
+    path: '/profile',
+    component: ProfileView,
+    children: [
+      {
+        path: '',
+        name: 'profile',
+        component: ProfileInfo
+      },
+      {
+        path: 'orders',
+        name: 'profile-orders',
+        component: UserOrders
+      },
+      {
+        path: 'wishlist',
+        name: 'profile-wishlist',
+        component: UserWishlist
+      },
+      {
+        path: 'address',
+        name: 'profile-address',
+        component: UserAddress
+      },
+      {
+        path: 'change-password',
+        name: 'profile-change-password',
+        component: ChangePassword
       }
     ]
   }
