@@ -57,7 +57,7 @@ const routes = [
       },
       {
         path: '',
-        redirect: '/auth/signin'
+        redirect: '/home'
       }
     ]
   }

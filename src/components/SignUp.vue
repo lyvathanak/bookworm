@@ -1,7 +1,7 @@
 <template>
   <div class="singUp-page">
     <div class="breadcrumb">
-      <a href="/" class="breadcrumb-link home">Home</a>
+      <a href="/home" class="breadcrumb-link home">Home</a>
       <span class="breadcrumb-separator">/</span>
       <span class="breadcrumb-current">Sign Up</span>
     </div>
@@ -58,7 +58,7 @@ export default {
       console.log('Signup data:', this.firstName, this.lastName, this.dob, this.email, this.password);
       alert('Sign-up successful! Please sign in with your new account.');
       // After signup success, redirect to signin
-      this.$router.push('/auth/signin');
+      this.$router.push('/home');
     },
     socialLogin(provider) {
       alert(`Social login with ${provider} clicked`);

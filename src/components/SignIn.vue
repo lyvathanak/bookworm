@@ -1,7 +1,7 @@
 <template>
   <div class="singIn-page">
     <div class="breadcrumb">
-      <a href="/" class="breadcrumb-link home">Home</a>
+      <a href="/home" class="breadcrumb-link home">Home</a>
       <span class="breadcrumb-separator">/</span>
       <span class="breadcrumb-current">Sign In</span>
     </div>
