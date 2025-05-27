@@ -6,7 +6,10 @@ import WishListPage from '@/views/WishListPage.vue'
 import CheckoutPageVue from '@/views/CheckoutPage.vue'
 import CartPageVue from '@/views/CartPage.vue'
 
+// import Signup from '../components/SignUp.vue';
+// import Signin from '../components/SignIn.vue';
 
+import AuthPage from '@/views/AuthPage.vue'
 const routes = [
   {
     path: '/',
@@ -37,9 +40,28 @@ const routes = [
     path: '/Cart',
     name: 'cart',
     component: CartPageVue
+  },
+  {
+    path: '/auth',
+    component: AuthPage,
+    children: [
+      {
+        path: 'signin',
+        name: 'signin',
+        component: () => import('../components/SignIn.vue')
+      },
+      {
+        path: 'signup',
+        name: 'signup',
+        component: () => import('../components/SignUp.vue')
+      },
+      {
+        path: '',
+        redirect: '/auth/signin'
+      }
+    ]
   }
 ]
-
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
