@@ -1,6 +1,8 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-header">
+      <img src="https://via.placeholder.com/80" alt="User Profile" class="profile-image" />
+      <h3 class="user-name">{{ userFullName }}</h3>
       <h2>Welcome Back, {{ userFirstName }}!</h2>
     </div>
     <nav class="sidebar-nav">
@@ -45,11 +47,14 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const userFirstName = computed(() => localStorage.getItem('userFirstName') || 'Tooru')
+const userLastName = computed(() => localStorage.getItem('userLastName') || 'Kirishima')
+const userFullName = computed(() => `${userFirstName.value} ${userLastName.value}`)
 
 const logout = () => {
   localStorage.removeItem('user')
   localStorage.removeItem('token')
   localStorage.removeItem('userFirstName')
+  localStorage.removeItem('userLastName')
   localStorage.removeItem('wishlist')
   localStorage.removeItem('cartItems')
   router.push('/')
@@ -79,6 +84,22 @@ const logout = () => {
 .sidebar-nav {
   width: 100%;
 }
+.profile-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  object-fit: cover;
+  border: 2px solid #e6d430;
+}
+
+.user-name {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 5px;
+}
 
 .nav-list {
   list-style: none;
@@ -103,6 +124,8 @@ const logout = () => {
 .nav-link.active {
   background-color: #2a4060;
   color: #e6d430;
+  padding-left: 20px; /* Increase left padding */
+  padding-right: 20px; /* Increase right padding */
 }
 
 .nav-link.logout {

@@ -8,13 +8,8 @@
   </div>
 
   <div class="auth-container">
-
     <div class="logo-section">
       <img src="../assets/bookworm.png" alt="Bookworm Logo" class="logo" />
-      <!-- <h1 class="title">
-        BOOK <span class="highlight">WORM</span><br />
-        <small>ONLINE BOOKSTORE</small>
-      </h1> -->
     </div>
 
     <form @submit.prevent="handleSignup" class="auth-form">
@@ -22,6 +17,13 @@
       <input type="text" v-model="lastName" placeholder="Last Name" required />
       <input type="date" v-model="dob" placeholder="Date of Birth" required />
       <input type="email" v-model="email" placeholder="Email" required />
+      <input type="text" v-model="contact" placeholder="Contact" required />
+      <select v-model="gender" required>
+        <option value="" disabled selected>Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
       <input type="password" v-model="password" placeholder="Password" required />
 
       <button type="submit" class="btn-primary">Sign Up</button>
@@ -49,20 +51,26 @@ export default {
       lastName: '',
       dob: '',
       email: '',
+      contact: '',
+      gender: '',
       password: '',
     };
   },
   methods: {
     handleSignup() {
-      // Add your signup API call here
-      console.log('Signup data:', this.firstName, this.lastName, this.dob, this.email, this.password);
+      localStorage.setItem('userFirstName', this.firstName);
+      localStorage.setItem('userLastName', this.lastName);
+      localStorage.setItem('userBirthdate', this.dob);
+      localStorage.setItem('userEmail', this.email);
+      localStorage.setItem('userContact', this.contact);
+      localStorage.setItem('userGender', this.gender);
+
+      console.log('Signup data:', this.firstName, this.lastName, this.dob, this.email, this.contact, this.gender, this.password);
       alert('Sign-up successful! Please sign in with your new account.');
-      // After signup success, redirect to signin
       this.$router.push('/auth/signin');
     },
     socialLogin(provider) {
       alert(`Social login with ${provider} clicked`);
-      // Implement OAuth social login if needed
     },
   },
 };
@@ -96,13 +104,14 @@ export default {
 .breadcrumb-current {
   color: #666;
 }
+
 .auth-container {
   max-width: 512px;
   margin: auto;
-  height: 100vh; /* full viewport height */
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* vertical center */
+  justify-content: center;
   align-items: center;
   font-family: 'Poppins', sans-serif;
   padding: 0 1rem;
@@ -110,12 +119,12 @@ export default {
 }
 
 .back-button {
-  align-self: flex-start; /* put back arrow on left */
+  align-self: flex-start;
   font-size: 1.5rem;
   border: none;
   background: none;
   cursor: pointer;
-  margin-bottom: rem;
+  margin-bottom: 1rem;
   user-select: none;
   padding-left: 0;
   padding-top: 0;
@@ -138,12 +147,12 @@ export default {
 .title {
   font-weight: 700;
   font-size: 1.5rem;
-  color: #0a1e3f; /* dark blue */
+  color: #0a1e3f;
   line-height: 1.2;
 }
 
 .highlight {
-  color: #f8b500; /* yellow */
+  color: #f8b500;
 }
 
 .title small {
@@ -158,7 +167,8 @@ export default {
   width: 100%;
 }
 
-.auth-form input {
+.auth-form input,
+.auth-form select {
   width: 100%;
   padding: 12px 15px;
   margin-bottom: 1rem;
@@ -166,15 +176,34 @@ export default {
   border-radius: 4px;
   font-size: 1rem;
   box-sizing: border-box;
+  background-color: #fff;
+  color: #000;
 }
 
 .auth-form input[type="date"] {
-  /* Make date input placeholder style consistent */
   color: #999;
 }
 
 .auth-form input[type="date"]:focus {
   color: #000;
+}
+
+.auth-form select {
+  appearance: none; /* Remove default dropdown arrow */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23333%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 12px;
+  cursor: pointer;
+}
+
+/* Style the placeholder-like option */
+.auth-form select:invalid {
+  color: #999; /* Matches the placeholder color of other inputs */
+}
+
+.auth-form select option {
+  color: #000; /* Ensure selected options are black */
 }
 
 .btn-primary {
@@ -253,5 +282,4 @@ export default {
   color: #0a1e3f;
   text-decoration: none;
 }
-
 </style>

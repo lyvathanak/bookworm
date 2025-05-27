@@ -31,15 +31,25 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue';
 
+// Helper function to format date
+const formatDate = (dateString) => {
+  if (!dateString) return '18 November 1998';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+};
 
-const userFirstName = computed(() => localStorage.getItem('userFirstName') || 'Tooru')
-const userLastName = computed(() => localStorage.getItem('userLastName') || 'Kirishima')
-const userEmail = computed(() => localStorage.getItem('userEmail') || 'kirishimababy@gmail.com')
-const userContact = computed(() => localStorage.getItem('userContact') || '012345678')
-const userBirthdate = computed(() => localStorage.getItem('userBirthdate') || '18 November 1998')
-const userGender = computed(() => localStorage.getItem('userGender') || 'Male')
+const userFirstName = computed(() => localStorage.getItem('userFirstName') || 'Tooru');
+const userLastName = computed(() => localStorage.getItem('userLastName') || 'Kirishima');
+const userEmail = computed(() => localStorage.getItem('userEmail') || 'kirishimababy@gmail.com');
+const userContact = computed(() => localStorage.getItem('userContact') || '012345678');
+const userBirthdate = computed(() => formatDate(localStorage.getItem('userBirthdate')));
+const userGender = computed(() => localStorage.getItem('userGender') || 'Male');
 </script>
 
 <style scoped>

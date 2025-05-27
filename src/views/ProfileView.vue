@@ -21,6 +21,11 @@ import UserSidebar from '@/components/UserSidebar.vue'
   margin-left: 250px;
   padding: 20px;
   flex-grow: 1;
-  background-color: #f5f5f5;
+  background-color: #fff;
+}
+
+.content-area > * {
+  max-width: 600px;
+  margin: 0 auto;
 }
 </style>
