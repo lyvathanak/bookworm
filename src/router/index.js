@@ -1,82 +1,81 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import LandingPage from '../views/LandingPage.vue'
-import HomeView from '../views/HomeView.vue'
-import DescriptionPage from '../views/DescriptionPage.vue'
-import WishListPage from '@/views/WishListPage.vue'
-import CheckoutPageVue from '@/views/CheckoutPage.vue'
-import CartPageVue from '@/views/CartPage.vue'
-import AuthorProfile from '@/views/AuthorProfile.vue'
-import BookList from '@/views/BookList.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import LandingPage from '../views/LandingPage.vue';
+import HomeView from '../views/HomeView.vue';
+import DescriptionPage from '../views/DescriptionPage.vue';
+import WishListPage from '@/views/WishListPage.vue';
+import CheckoutPageVue from '@/views/CheckoutPage.vue';
+import CartPageVue from '@/views/CartPage.vue';
+import AuthorProfile from '@/views/AuthorProfile.vue';
+import BookList from '@/views/BookList.vue';
+import AuthPage from '@/views/AuthPage.vue';
 
-// import Signup from '../components/SignUp.vue';
-// import Signin from '../components/SignIn.vue';
-
-import AuthPage from '@/views/AuthPage.vue'
 const routes = [
   {
     path: '/',
     name: 'landing',
-    component: LandingPage
+    component: LandingPage,
   },
   {
     path: '/home',
     name: 'home',
-    component: HomeView
+    component: HomeView,
   },
   {
     path: '/wishlist',
     name: 'wishlist',
-    component: WishListPage
+    component: WishListPage,
   },
   {
     path: '/book/:id',
     name: 'book-description',
-    component: DescriptionPage
+    component: DescriptionPage,
   },
   {
-    path: '/Checkout',
+    path: '/checkout',
     name: 'checkout',
-    component: CheckoutPageVue
+    component: CheckoutPageVue,
   },
   {
-    path: '/Cart',
+    path: '/cart',
     name: 'cart',
-    component: CartPageVue
+    component: CartPageVue,
   },
   {
-  path: '/author/james-clear',
-  name: 'author-profile',
-  component: AuthorProfile,
+    path: '/author/:authorName',
+    name: 'author-profile',
+    component: AuthorProfile,
   },
   {
-    path: '/author/james-clear/books',
+    path: '/author/:authorName/books',
     name: 'book-list',
     component: BookList,
   },
-
-  { 
+  {
     path: '/auth',
+    name: 'auth',
     component: AuthPage,
     children: [
-    {
-      path:'',
-      name: 'Authentication',
-      component: AuthPage,
-      children:[
-
-        { path: 'signin', component: () => import('../components/SignIn.vue') },
-        { path: 'signup', component: () => import('../components/SignUp.vue') },
-        { path: '/', redirect: '/signin' },  // default route
-      ]
-    }
-    ]
-  }
-]
-
+      {
+        path: '',
+        redirect: '/auth/signin', // Redirect /auth to /auth/signin
+      },
+      {
+        path: 'signin',
+        name: 'signin',
+        component: () => import('../components/SignIn.vue'),
+      },
+      {
+        path: 'signup',
+        name: 'signup',
+        component: () => import('../components/SignUp.vue'),
+      },
+    ],
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;

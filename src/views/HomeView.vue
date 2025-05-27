@@ -1,4 +1,3 @@
-```vue
 <template>
   <div class="home-view">
     <!-- Book Grid -->
@@ -166,7 +165,7 @@ const hasMoreBooks = computed(() => {
   return displayCount.value < allBooks.value.length;
 });
 
-// Add to cart function - Overwrite localStorage with only the clicked item
+// Add to cart function - Append to localStorage without navigating
 const addToCart = (book) => {
   try {
     // Prepare cart item
@@ -179,14 +178,24 @@ const addToCart = (book) => {
       quantity: 1,
     };
 
-    // Overwrite localStorage with only this item as an array with one element
-    localStorage.setItem('cartItems', JSON.stringify([cartItem]));
+    // Get existing cart items from localStorage or initialize an empty array
+    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+
+    // Check if the book is already in the cart
+    const existingItemIndex = cartItems.findIndex(item => item.id === book.id);
+    if (existingItemIndex !== -1) {
+      // If item exists, increment quantity
+      cartItems[existingItemIndex].quantity += 1;
+    } else {
+      // If item doesn't exist, append the new item
+      cartItems.push(cartItem);
+    }
+
+    // Save updated cart back to localStorage
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
 
     // Show confirmation
     alert(`"${book.title}" added to cart!`);
-
-    // Navigate to cart page
-    router.push({ name: 'cart' });
   } catch (error) {
     console.error('Error adding item to cart:', error);
     alert('Failed to add item to cart. Please try again.');
@@ -389,4 +398,3 @@ const formatAuthorName = (author) => {
   }
 }
 </style>
-```
