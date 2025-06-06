@@ -1,72 +1,105 @@
 <template>
   <div class="main-content">
     <header class="page-header">
-      <h1>Customer Service</h1>
-      <p>Name: Overview</p>
+      <h1>Customer Service Hub</h1>
+      <p>Quickly find users and orders</p>
     </header>
-    <div class="stats-grid">
-      <div class="stat-card book-card">
-        <h3>Book <font-awesome-icon icon="book-open" /></h3>
-        <p>{{ stats.books }} new book added</p>
-      </div>
-      <div class="stat-card user-card">
-        <h3>User <font-awesome-icon icon="user" /></h3>
-        <p>{{ (stats.users / 1000).toFixed(1) }}K user</p>
-      </div>
-      <div class="stat-card sale-card">
-        <h3>Sale <font-awesome-icon icon="shopping-cart" /></h3>
-        <p>{{ (stats.sales / 1000).toFixed(0) }}K+</p>
-      </div>
-      <div class="stat-card order-card">
-        <h3>Order <font-awesome-icon icon="chart-line" /></h3>
-        <p>{{ (stats.orders / 1000).toFixed(1) }}K+</p>
+
+    <div class="service-hub">
+      <div class="lookup-tool">
+        <h3>Find User or Order</h3>
+        <input type="search" v-model="searchTerm" placeholder="Search by User Email or Order ID..." class="search-input" />
+        <div class="search-results">
+            <div v-if="searchTerm && searchResults.length === 0" class="no-results">
+                No results found.
+            </div>
+            <ul v-else>
+                <li v-for="item in searchResults" :key="item.id">
+                   <div v-if="item.type === 'user'">
+                       <span><font-awesome-icon icon="user" /> {{ item.name }} ({{ item.email }})</span>
+                       <router-link :to="`/users/${item.id}`" class="btn-details">View User</router-link>
+                   </div>
+                   <div v-if="item.type === 'order'">
+                       <span><font-awesome-icon icon="receipt" /> Order #{{ item.id }}</span>
+                       <router-link :to="`/orders/${item.id}`" class="btn-details">View Order</router-link>
+                   </div>
+                </li>
+            </ul>
+        </div>
       </div>
     </div>
-    </div>
+  </div>
 </template>
 
 <script>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
 
 export default {
   name: 'CustomerService',
   setup() {
     const store = useStore();
-    return {
-      stats: computed(() => store.state.stats),
-    };
+    const searchTerm = ref('');
+
+    const searchResults = computed(() => {
+        if (!searchTerm.value) return [];
+        const lowerSearch = searchTerm.value.toLowerCase();
+        
+        const users = store.state.users
+            .filter(u => u.email.toLowerCase().includes(lowerSearch) || u.name.toLowerCase().includes(lowerSearch))
+            .map(u => ({...u, type: 'user' }));
+
+        const orders = store.state.orders
+            .filter(o => o.id.toString().includes(lowerSearch))
+            .map(o => ({...o, type: 'order' }));
+
+        return [...users, ...orders];
+    });
+
+    return { searchTerm, searchResults };
   }
 };
 </script>
 
 <style scoped>
-.main-content {
-  flex-grow: 1;
-  padding: 2rem;
-  background-color: #fff;
-}
-.page-header {
-  margin-bottom: 2rem;
-  color: #0d1b2a;
-}
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-.stat-card {
-    padding: 1.5rem;
+.main-content { flex-grow: 1; padding: 2rem; background-color: #fff; }
+.page-header { margin-bottom: 2rem; }
+.lookup-tool {
+    background: #fdfdfd;
+    padding: 2rem;
     border-radius: 10px;
-    color: #333;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
-.stat-card h3 {
-    font-size: 1.2rem;
+.search-input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+.search-results ul {
+    list-style: none;
+}
+.search-results li div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 5px;
     margin-bottom: 0.5rem;
 }
-.book-card { background-color: #ffcdd2; }
-.user-card { background-color: #fff9c4; }
-.sale-card { background-color: #c8e6c9; }
-.order-card { background-color: #b3e5fc; }
+.no-results {
+    padding: 1rem;
+    text-align: center;
+    color: #777;
+}
+.btn-details {
+    padding: 0.3rem 0.8rem;
+    background-color: #415a77;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
 </style>
