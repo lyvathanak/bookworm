@@ -1,42 +1,36 @@
 <template>
-  <div id="app">
-    <div class="app-container">
-      <admin-sidebar />
-      <div class="main-content">
-        <router-view />
-      </div>
-    </div>
+  <div id="app-container">
+    <AppSidebar v-if="isAuthenticated" />
+    <router-view/>
   </div>
 </template>
 
 <script>
-import AdminSidebar from './components/Sidebar.vue'
+import { computed } from 'vue';
+import { useStore } from 'vuex';
+import AppSidebar from './components/Sidebar.vue';
 
 export default {
   name: 'App',
   components: {
-    AdminSidebar
+    AppSidebar,
+  },
+  setup() {
+    const store = useStore();
+    const isAuthenticated = computed(() => store.state.auth.isAuthenticated);
+
+    return {
+      isAuthenticated
+    };
   }
-}
+};
 </script>
 
 <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-}
-
-.app-container {
+#app-container {
   display: flex;
-}
-
-.main-content {
-  flex: 1;
+  height: 100vh;
+  width: 100%;
+  background-color: #0d1b2a;
 }
 </style>

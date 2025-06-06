@@ -1,168 +1,124 @@
 <template>
-    <div class="product-manager">
-      <div class="header">
-        <h1>Product Manager</h1>
-        <div class="user-info">
-          <span>Name/ Overview</span>
-        </div>
+  <div class="main-content">
+    <header class="page-header">
+      <h1>Product Manager</h1>
+      <p>Name: Overview</p>
+    </header>
+    <div class="toolbar">
+      <div class="tabs">
+        <button class="tab-btn active">Book List</button>
       </div>
-  
-      <div class="actions-bar">
-        <div class="action-buttons">
-          <button class="action-btn active">Book List</button>
-        </div>
-        <div class="search-box">
-          <input type="text" placeholder="search" />
-          <button class="search-btn">
-            <i class="fas fa-search"></i>
-          </button>
-        </div>
-        <button class="add-btn">Add new book</button>
-      </div>
-  
-      <div class="books-table">
-        <table>
-          <thead>
-            <tr>
-              <th>NO</th>
-              <th>Book image</th>
-              <th>Book name</th>
-              <th>Book category</th>
-              <th>Book author</th>
-              <th>Book description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(book, index) in books" :key="book.id">
-              <td>{{ index + 1 }}</td>
-              <td class="book-image">
-                <div class="image-placeholder"></div>
-              </td>
-              <td>{{ book.title }}</td>
-              <td>{{ book.category }}</td>
-              <td>{{ book.author }}</td>
-              <td>{{ book.description }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="actions">
+        <input type="search" placeholder="Search..." class="search-input" />
+        <button class="btn btn-primary">Add new book</button>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import { mapState } from 'vuex'
-  
-  export default {
-    name: 'ProductManager',
-    computed: {
-      ...mapState(['books'])
-    }
+    <div class="product-table">
+      <table>
+        <thead>
+          <tr>
+            <th>NO</th>
+            <th>Book image</th>
+            <th>Book name</th>
+            <th>Book category</th>
+            <th>Book author</th>
+            <th>Book description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(book, index) in books" :key="book.id">
+            <td>{{ index + 1 }}</td>
+            <td><div class="book-image-placeholder"></div></td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.category }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.description }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script>
+import { computed } from 'vue';
+import { useStore } from 'vuex';
+
+export default {
+  name: 'ProductManager',
+  setup() {
+    const store = useStore();
+    return {
+      books: computed(() => store.state.books)
+    };
   }
-  </script>
-  
-  <style scoped>
-  .product-manager {
-    padding: 0;
-    background-color: #f5f5f5;
-  }
-  
-  .header {
-    background-color: #002140;
-    color: white;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .header h1 {
-    font-size: 24px;
-    margin: 0;
-    color: #ffc107;
-  }
-  
-  .user-info {
-    font-size: 14px;
-  }
-  
-  .actions-bar {
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .action-btn {
-    padding: 10px 20px;
-    background-color: transparent;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .action-btn.active {
-    background-color: #002140;
-    color: white;
-  }
-  
-  .search-box {
-    display: flex;
-    background-color: #eee;
-    border-radius: 20px;
-    overflow: hidden;
-    width: 300px;
-  }
-  
-  .search-box input {
-    flex: 1;
-    border: none;
-    padding: 10px 15px;
-    background-color: transparent;
-  }
-  
-  .search-btn {
-    background-color: transparent;
-    border: none;
-    padding: 0 15px;
-    cursor: pointer;
-  }
-  
-  .add-btn {
-    padding: 10px 20px;
-    background-color: #002140;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .books-table {
-    padding: 0 20px 20px;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  
-  thead {
-    background-color: #002140;
-    color: white;
-  }
-  
-  th, td {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .book-image .image-placeholder {
-    width: 80px;
-    height: 100px;
-    background-color: #eee;
-  }
-  </style>
-  
+};
+</script>
+
+<style scoped>
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  background-color: #fff;
+}
+.page-header {
+  margin-bottom: 2rem;
+  color: #0d1b2a;
+}
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.tabs .tab-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background-color: #0d1b2a;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.tabs .tab-btn.active {
+  background-color: #1b263b;
+}
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+.search-input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 250px;
+}
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.btn-primary {
+  background-color: #415a77;
+  color: white;
+}
+.product-table table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.product-table th, .product-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+.product-table th {
+  background-color: #1b263b;
+  color: white;
+}
+.book-image-placeholder {
+  width: 60px;
+  height: 80px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+</style>

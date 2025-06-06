@@ -14,6 +14,6 @@ library.add(fas)
 const app = createApp(App)
 
 app.component('font-awesome-icon', FontAwesomeIcon)
-app.use(router)  // Make sure router is before store
+app.use(router)
 app.use(store)
 app.mount('#app')
