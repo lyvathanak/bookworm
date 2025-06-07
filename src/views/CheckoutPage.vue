@@ -49,7 +49,6 @@
           <select v-model="selectedLocation">
             <option disabled value="">Select address</option>
             <option value="phnom_penh">Phnom Penh, Cambodia</option>
-            <!-- Add more locations as needed -->
           </select>
         </div>
         <div class="form-group">
@@ -90,6 +89,20 @@
     <div class="summary-section">
       <h2>Check out summary</h2>
       <p>Check your check out summary before process to payment</p>
+      
+      <!-- Display cart items -->
+      <div class="cart-items-preview" v-if="cartItems.length > 0">
+        <h3>Order Items ({{ cartItems.length }})</h3>
+        <div v-for="item in cartItems" :key="item.id" class="cart-item-preview">
+          <img :src="item.coverImage || '/placeholder.svg?height=50&width=40'" :alt="item.title" class="item-image" />
+          <div class="item-details">
+            <span class="item-title">{{ item.title }}</span>
+            <span class="item-quantity">Qty: {{ item.quantity }}</span>
+          </div>
+          <span class="item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+        </div>
+      </div>
+      
       <div class="summary-details">
         <div class="summary-row">
           <span>Subtotal</span>
@@ -112,7 +125,9 @@
           <span>${{ total.toFixed(2) }}</span>
         </div>
       </div>
-      <button class="checkout-btn" @click="processCheckout">Process to checkout</button>
+      <button class="checkout-btn" @click="processCheckout" :disabled="isProcessing">
+        {{ isProcessing ? 'Processing...' : 'Process to checkout' }}
+      </button>
     </div>
   </div>
 </template>
@@ -120,6 +135,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { authStore } from '@/store/auth';
 
 // State for account section
 const hasAccount = ref('no');
@@ -137,6 +153,7 @@ const paymentMethod = ref('cod');
 
 // State for cart items
 const cartItems = ref([]);
+const isProcessing = ref(false);
 
 // Router for navigation
 const router = useRouter();
@@ -184,16 +201,54 @@ const paymentMethodDisplay = computed(() => {
 });
 
 // Methods
-const signIn = () => {
-  // Simulate sign-in (replace with actual authentication logic)
-  if (email.value && password.value) {
-    alert('Signed in successfully!');
-  } else {
+const signIn = async () => {
+  if (!email.value || !password.value) {
     alert('Please enter email and password.');
+    return;
+  }
+
+  try {
+    // Simulate sign-in (replace with actual authentication logic)
+    const response = await simulateSignIn({ email: email.value, password: password.value });
+    
+    if (response.success) {
+      authStore.initUser(response.user);
+      alert('Signed in successfully!');
+    } else {
+      alert('Invalid credentials');
+    }
+  } catch (error) {
+    console.error('Sign in error:', error);
+    alert('Sign in failed. Please try again.');
   }
 };
 
-const processCheckout = () => {
+// Simulate sign in - replace with your actual API call
+const simulateSignIn = async (credentials) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        success: true,
+        user: {
+          id: Date.now(),
+          firstName: 'John',
+          lastName: 'Doe',
+          email: credentials.email,
+          contact: '',
+          createdAt: new Date().toISOString()
+        }
+      });
+    }, 1000);
+  });
+};
+
+const processCheckout = async () => {
+  // Validate cart
+  if (cartItems.value.length === 0) {
+    alert('Your cart is empty.');
+    return;
+  }
+
   // Validate delivery details if delivery option is selected
   if (deliveryOption.value === 'address' && (!selectedLocation.value || !addressDetail.value)) {
     alert('Please provide location and address details.');
@@ -206,14 +261,52 @@ const processCheckout = () => {
     return;
   }
 
-  // Simulate checkout process
-  alert('Checkout successful! Thank you for your purchase.');
+  isProcessing.value = true;
 
-  // Clear cart from localStorage
-  localStorage.removeItem('cartItems');
+  try {
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
-  // Navigate back to home page
-  router.push({ name: 'home' });
+    // Add each item as a separate order to the user's order history
+    if (authStore.isAuthenticated) {
+      cartItems.value.forEach(item => {
+        authStore.addOrder({
+          title: item.title,
+          author: item.author,
+          coverImage: item.coverImage,
+          quantity: item.quantity,
+          price: item.price,
+          format: item.format || 'Paperback',
+          paymentMethod: paymentMethodDisplay.value,
+          deliveryOption: deliveryOption.value,
+          orderDate: new Date().toISOString(),
+          status: 'Order in Progress'
+        });
+      });
+    }
+
+    // Success message
+    alert('Checkout successful! Thank you for your purchase.');
+
+    // Clear cart from localStorage
+    localStorage.removeItem('cartItems');
+    
+    // Dispatch event to update cart count in navbar
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+
+    // Navigate to profile orders page if user is authenticated, otherwise go to home
+    if (authStore.isAuthenticated) {
+      router.push('/profile?section=orders');
+    } else {
+      router.push({ name: 'home' });
+    }
+
+  } catch (error) {
+    console.error('Checkout error:', error);
+    alert('Checkout failed. Please try again.');
+  } finally {
+    isProcessing.value = false;
+  }
 };
 </script>
 
@@ -333,11 +426,66 @@ h2 {
 
 .summary-section {
   align-self: flex-end;
-  width: 300px;
+  width: 350px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 20px;
   background-color: #f9f9f9;
+}
+
+.cart-items-preview {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.cart-items-preview h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.cart-item-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 8px;
+  background: white;
+  border-radius: 6px;
+}
+
+.item-image {
+  width: 40px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.item-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.2;
+}
+
+.item-quantity {
+  font-size: 11px;
+  color: #666;
+}
+
+.item-price {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0a1f44;
 }
 
 .summary-details {
@@ -357,13 +505,6 @@ h2 {
   border-bottom: none;
 }
 
-.summary-note {
-  color: #666;
-  font-style: italic;
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-
 .checkout-btn {
   width: 100%;
   padding: 12px;
@@ -374,10 +515,16 @@ h2 {
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
+  transition: background-color 0.3s;
 }
 
-.checkout-btn:hover {
+.checkout-btn:hover:not(:disabled) {
   background-color: #d6c420;
+}
+
+.checkout-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 input[type="radio"],

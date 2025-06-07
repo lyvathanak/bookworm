@@ -50,6 +50,13 @@ const routes = [
     name: 'book-list',
     component: BookList,
   },
+
+    {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('../views/ProfileView.vue'),
+    meta: { requiresAuth: true }
+  },
   {
     path: '/auth',
     name: 'auth',

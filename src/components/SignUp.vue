@@ -4,10 +4,6 @@
 
     <div class="logo-section">
       <img src="../assets/bookworm.png" alt="Bookworm Logo" class="logo" />
-      <!-- <h1 class="title">
-        BOOK <span class="highlight">WORM</span><br />
-        <small>ONLINE BOOKSTORE</small>
-      </h1> -->
     </div>
 
     <form @submit.prevent="handleSignup" class="auth-form">
@@ -17,7 +13,9 @@
       <input type="email" v-model="email" placeholder="Email" required />
       <input type="password" v-model="password" placeholder="Password" required />
 
-      <button type="submit" class="btn-primary">Sign Up</button>
+      <button type="submit" class="btn-primary" :disabled="isLoading">
+        {{ isLoading ? 'Creating Account...' : 'Sign Up' }}
+      </button>
     </form>
 
     <div class="divider"><span>OR</span></div>
@@ -34,40 +32,83 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      firstName: '',
-      lastName: '',
-      dob: '',
-      email: '',
-      password: '',
-    };
-  },
-  methods: {
-    handleSignup() {
-      // Add your signup API call here
-      console.log('Signup data:', this.firstName, this.lastName, this.dob, this.email, this.password);
-      alert('Signup function triggered');
-      // After signup success, redirect to login or dashboard
-      this.$router.push('/signin');
-    },
-    socialLogin(provider) {
-      alert(`Social login with ${provider} clicked`);
-      // Implement OAuth social login if needed
-    },
-  },
-};
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const isLoading = ref(false)
+
+// Form data
+const firstName = ref('')
+const lastName = ref('')
+const dob = ref('')
+const email = ref('')
+const password = ref('')
+
+const handleSignup = async () => {
+  isLoading.value = true
+  
+  try {
+    // Simulate API call - replace with your actual registration logic
+    const response = await simulateSignUp({
+      firstName: firstName.value,
+      lastName: lastName.value,
+      dob: dob.value,
+      email: email.value,
+      password: password.value
+    })
+    
+    if (response.success) {
+      alert('Account created successfully! Please sign in.')
+      
+      // Redirect to signin page after successful signup
+      router.push('/auth/signin')
+    } else {
+      alert('Registration failed. Please try again.')
+    }
+  } catch (error) {
+    console.error('Signup error:', error)
+    alert('Registration failed. Please try again.')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Simulate sign up - replace with your actual API call
+const simulateSignUp = async (userData) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        success: true,
+        user: {
+          id: Date.now(),
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email,
+          dob: userData.dob,
+          contact: '',
+          createdAt: new Date().toISOString()
+        }
+      })
+    }, 1000)
+  })
+}
+
+const socialLogin = (provider) => {
+  alert(`Social login with ${provider} clicked`)
+  // Implement OAuth social login if needed
+}
 </script>
 
-<style scoped>.auth-container {
+<style scoped>
+.auth-container {
   max-width: 512px;
   margin: auto;
-  height: 100vh; /* full viewport height */
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* vertical center */
+  justify-content: center;
   align-items: center;
   font-family: 'Poppins', sans-serif;
   padding: 0 1rem;
@@ -75,12 +116,12 @@ export default {
 }
 
 .back-button {
-  align-self: flex-start; /* put back arrow on left */
+  align-self: flex-start;
   font-size: 1.5rem;
   border: none;
   background: none;
   cursor: pointer;
-  margin-bottom: rem;
+  margin-bottom: 1rem;
   user-select: none;
   padding-left: 0;
   padding-top: 0;
@@ -100,25 +141,6 @@ export default {
   margin-bottom: 0.5rem;
 }
 
-.title {
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: #0a1e3f; /* dark blue */
-  line-height: 1.2;
-}
-
-.highlight {
-  color: #f8b500; /* yellow */
-}
-
-.title small {
-  font-weight: 400;
-  font-size: 0.8rem;
-  color: #0a1e3f;
-  margin-top: 0.1rem;
-  display: block;
-}
-
 .auth-form {
   width: 100%;
 }
@@ -134,7 +156,6 @@ export default {
 }
 
 .auth-form input[type="date"] {
-  /* Make date input placeholder style consistent */
   color: #999;
 }
 
@@ -152,27 +173,16 @@ export default {
   cursor: pointer;
   width: 100%;
   font-size: 1rem;
+  transition: background-color 0.3s;
 }
 
-.options-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  color: #555;
-  align-items: center;
+.btn-primary:hover:not(:disabled) {
+  background-color: #083a6b;
 }
 
-.options-row label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.forgot-password {
-  color: #0a1e3f;
-  text-decoration: none;
-  font-weight: 500;
+.btn-primary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 .divider {
@@ -218,5 +228,4 @@ export default {
   color: #0a1e3f;
   text-decoration: none;
 }
-
 </style>
