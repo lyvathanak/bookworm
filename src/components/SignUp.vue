@@ -10,6 +10,14 @@
       <input type="text" v-model="firstName" placeholder="First Name" required />
       <input type="text" v-model="lastName" placeholder="Last Name" required />
       <input type="date" v-model="dob" placeholder="Date of Birth" required />
+      
+      <select v-model="gender" class="gender-select" required>
+        <option value="" disabled>Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+
       <input type="email" v-model="email" placeholder="Email" required />
       <input type="password" v-model="password" placeholder="Password" required />
 
@@ -43,6 +51,7 @@ const isLoading = ref(false)
 const firstName = ref('')
 const lastName = ref('')
 const dob = ref('')
+const gender = ref('')
 const email = ref('')
 const password = ref('')
 
@@ -50,19 +59,17 @@ const handleSignup = async () => {
   isLoading.value = true
   
   try {
-    // Simulate API call - replace with your actual registration logic
     const response = await simulateSignUp({
       firstName: firstName.value,
       lastName: lastName.value,
       dob: dob.value,
+      gender: gender.value,
       email: email.value,
       password: password.value
     })
     
     if (response.success) {
       alert('Account created successfully! Please sign in.')
-      
-      // Redirect to signin page after successful signup
       router.push('/auth/signin')
     } else {
       alert('Registration failed. Please try again.')
@@ -75,7 +82,6 @@ const handleSignup = async () => {
   }
 }
 
-// Simulate sign up - replace with your actual API call
 const simulateSignUp = async (userData) => {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -87,6 +93,7 @@ const simulateSignUp = async (userData) => {
           lastName: userData.lastName,
           email: userData.email,
           dob: userData.dob,
+          gender: userData.gender,
           contact: '',
           createdAt: new Date().toISOString()
         }
@@ -97,7 +104,6 @@ const simulateSignUp = async (userData) => {
 
 const socialLogin = (provider) => {
   alert(`Social login with ${provider} clicked`)
-  // Implement OAuth social login if needed
 }
 </script>
 
@@ -153,6 +159,24 @@ const socialLogin = (provider) => {
   border-radius: 4px;
   font-size: 1rem;
   box-sizing: border-box;
+}
+
+.auth-form select.gender-select {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.auth-form select.gender-select option[value=""][disabled] {
+  color: #999;
+}
+
+.auth-form select.gender-select:focus {
+  color: #000;
 }
 
 .auth-form input[type="date"] {
