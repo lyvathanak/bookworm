@@ -13,12 +13,13 @@
       
       <select v-model="gender" class="gender-select" required>
         <option value="" disabled>Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
       </select>
 
       <input type="email" v-model="email" placeholder="Email" required />
+      <input type="text" v-model="contact" placeholder="Contact Number" required />
       <input type="password" v-model="password" placeholder="Password" required />
 
       <button type="submit" class="btn-primary" :disabled="isLoading">
@@ -53,22 +54,27 @@ const lastName = ref('')
 const dob = ref('')
 const gender = ref('')
 const email = ref('')
+const contact = ref('')
 const password = ref('')
 
 const handleSignup = async () => {
   isLoading.value = true
   
   try {
-    const response = await simulateSignUp({
+    const userData = {
       firstName: firstName.value,
       lastName: lastName.value,
       dob: dob.value,
-      gender: gender.value,
+      gender: gender.value.toLowerCase(),
       email: email.value,
+      contact: contact.value,
       password: password.value
-    })
+    }
+
+    const response = await simulateSignUp(userData)
     
     if (response.success) {
+      localStorage.setItem('signupData', JSON.stringify(response.user))
       alert('Account created successfully! Please sign in.')
       router.push('/auth/signin')
     } else {
@@ -85,18 +91,27 @@ const handleSignup = async () => {
 const simulateSignUp = async (userData) => {
   return new Promise((resolve) => {
     setTimeout(() => {
+      const newUser = {
+        id: Date.now(),
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        contact: userData.contact,
+        profileImage: null,
+        createdAt: new Date().toISOString(),
+        dob: userData.dob,
+        gender: userData.gender,
+        address: {
+          recipient: '',
+          phoneNumber: '',
+          city: '',
+          detail: ''
+        }
+      }
+      
       resolve({
         success: true,
-        user: {
-          id: Date.now(),
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          email: userData.email,
-          dob: userData.dob,
-          gender: userData.gender,
-          contact: '',
-          createdAt: new Date().toISOString()
-        }
+        user: newUser
       })
     }, 1000)
   })
@@ -151,16 +166,7 @@ const socialLogin = (provider) => {
   width: 100%;
 }
 
-.auth-form input {
-  width: 100%;
-  padding: 12px 15px;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
+.auth-form input,
 .auth-form select.gender-select {
   width: 100%;
   padding: 12px 15px;

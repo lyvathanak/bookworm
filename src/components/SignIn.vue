@@ -39,7 +39,6 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { authStore } from '@/store/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -52,22 +51,16 @@ const rememberMe = ref(false)
 
 const handleSignin = async () => {
   isLoading.value = true
-  
   try {
-    // Simulate API call - replace with your actual authentication logic
-    const response = await simulateSignIn({ 
-      email: email.value, 
-      password: password.value 
+    const response = await simulateSignIn({
+      email: email.value,
+      password: password.value
     })
     
     if (response.success) {
-      // Initialize user in auth store
-      authStore.initUser(response.user)
-      
-      // Get the redirect path from query params or default to home
+      const user = response.user
+      localStorage.setItem('user', JSON.stringify(user))
       const redirectTo = route.query.redirect || '/'
-      
-      // Redirect back to where user was before or to home
       router.push(redirectTo)
     } else {
       alert('Invalid credentials')
@@ -80,33 +73,32 @@ const handleSignin = async () => {
   }
 }
 
-// Simulate sign in - replace with your actual API call
 const simulateSignIn = async (credentials) => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve({
-        success: true,
-        user: {
-          id: Date.now(),
-          firstName: 'John',
-          lastName: 'Doe',
-          email: credentials.email,
-          contact: '',
-          createdAt: new Date().toISOString()
-        }
-      })
+      // Retrieve signup data if available
+      const signupData = localStorage.getItem('signupData')
+      if (signupData && JSON.parse(signupData).email === credentials.email) {
+        resolve({
+          success: true,
+          user: JSON.parse(signupData)
+        })
+      } else {
+        resolve({
+          success: false,
+          user: null
+        })
+      }
     }, 1000)
   })
 }
 
 const socialLogin = (provider) => {
   alert(`Social login with ${provider} clicked`)
-  // Implement OAuth social login if needed
 }
 </script>
 
 <style scoped>
-/* Same styles as before */
 .auth-container {
   max-width: 512px;
   margin: auto;

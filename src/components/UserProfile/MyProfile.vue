@@ -46,6 +46,7 @@
             v-model="profileData.contact" 
             :disabled="!isEditing"
             class="form-input"
+            placeholder="Enter phone number"
           />
         </div>
       </div>
@@ -71,33 +72,12 @@
       <div class="form-group">
         <label>Gender</label>
         <div class="gender-options">
-          <label class="radio-option" :class="{ selected: profileData.gender === 'male' }">
-            <input 
-              type="radio" 
-              value="male" 
-              v-model="profileData.gender" 
-              :disabled="!isEditing"
-            />
-            <span>Male</span>
-          </label>
-          <label class="radio-option" :class="{ selected: profileData.gender === 'female' }">
-            <input 
-              type="radio" 
-              value="female" 
-              v-model="profileData.gender" 
-              :disabled="!isEditing"
-            />
-            <span>Female</span>
-          </label>
-          <label class="radio-option" :class="{ selected: profileData.gender === 'other' }">
-            <input 
-              type="radio" 
-              value="other" 
-              v-model="profileData.gender" 
-              :disabled="!isEditing"
-            />
-            <span>Other</span>
-          </label>
+          <input type="radio" id="male" v-model="profileData.gender" value="male" :disabled="!isEditing">
+          <label for="male" class="gender-label">Male</label>
+          <input type="radio" id="female" v-model="profileData.gender" value="female" :disabled="!isEditing">
+          <label for="female" class="gender-label">Female</label>
+          <input type="radio" id="other" v-model="profileData.gender" value="other" :disabled="!isEditing">
+          <label for="other" class="gender-label">Other</label>
         </div>
       </div>
 
@@ -106,89 +86,112 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 
-export default {
-  name: 'MyProfile',
-  props: {
-    user: Object
-  },
-  emits: ['update-user'],
-  setup(props, { emit }) {
-    const isEditing = ref(false)
+const isEditing = ref(false)
 
-    const profileData = reactive({
-      firstName: '',
-      lastName: '',
-      email: '',
-      contact: '',
-      birthDay: '',
-      birthMonth: '',
-      birthYear: '',
-      gender: ''
-    })
+const profileData = reactive({
+  firstName: '',
+  lastName: '',
+  email: '',
+  contact: '',
+  birthDay: '',
+  birthMonth: '',
+  birthYear: '',
+  gender: ''
+})
 
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ]
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
 
-    const years = computed(() => {
-      const currentYear = new Date().getFullYear()
-      const years = []
-      for (let year = currentYear; year >= currentYear - 100; year--) {
-        years.push(year)
+const years = computed(() => {
+  const currentYear = new Date().getFullYear()
+  const years = []
+  for (let year = currentYear; year >= currentYear - 100; year--) {
+    years.push(year)
+  }
+  return years
+})
+
+const loadUserData = () => {
+  const savedUser = localStorage.getItem('user')
+  if (savedUser) {
+    const user = JSON.parse(savedUser)
+    profileData.firstName = user.firstName || ''
+    profileData.lastName = user.lastName || ''
+    profileData.email = user.email || ''
+    profileData.contact = user.contact || ''
+    profileData.gender = user.gender || ''
+    if (user.dob) {
+      const date = new Date(user.dob)
+      if (!isNaN(date.getTime())) {
+        profileData.birthDay = date.getDate()
+        profileData.birthMonth = date.getMonth() + 1
+        profileData.birthYear = date.getFullYear()
       }
-      return years
-    })
-
-    const toggleEdit = () => {
-      isEditing.value = !isEditing.value
-    }
-
-    const updateProfile = () => {
-      emit('update-user', profileData)
-      isEditing.value = false
-      alert('Profile updated successfully!')
-    }
-
-    onMounted(() => {
-      if (props.user) {
-        Object.assign(profileData, props.user)
-        if (props.user.dob) {
-          const date = new Date(props.user.dob)
-          profileData.birthDay = date.getDate()
-          profileData.birthMonth = date.getMonth() + 1
-          profileData.birthYear = date.getFullYear()
-        }
-      }
-    })
-
-    return {
-      isEditing,
-      profileData,
-      months,
-      years,
-      toggleEdit,
-      updateProfile
     }
   }
 }
+
+const toggleEdit = () => {
+  isEditing.value = !isEditing.value
+  if (isEditing.value) {
+    loadUserData()
+  }
+}
+
+const updateProfile = () => {
+  let dobString = null
+  if (profileData.birthDay && profileData.birthMonth && profileData.birthYear) {
+    dobString = `${profileData.birthYear}-${profileData.birthMonth.toString().padStart(2, '0')}-${profileData.birthDay.toString().padStart(2, '0')}`
+  }
+
+  const updatedUser = {
+    firstName: profileData.firstName,
+    lastName: profileData.lastName,
+    email: profileData.email,
+    contact: profileData.contact,
+    gender: profileData.gender,
+    dob: dobString
+  }
+
+  localStorage.setItem('user', JSON.stringify(updatedUser))
+  isEditing.value = false
+  alert('Profile updated successfully!')
+}
+
+onMounted(() => {
+  loadUserData()
+})
 </script>
 
 <style scoped>
+.my-profile {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
 }
 
 .section-header h2 {
   font-size: 24px;
-  color: #666;
+  color: #333;
   margin: 0;
+  font-weight: 600;
 }
 
 .edit-button {
@@ -198,14 +201,15 @@ export default {
   color: #666;
   cursor: pointer;
   padding: 5px;
+  transition: color 0.2s;
 }
 
 .edit-button:hover {
-  color: #333;
+  color: #0a1f44;
 }
 
 .profile-form {
-  max-width: 800px;
+  padding: 10px;
 }
 
 .form-row {
@@ -223,7 +227,8 @@ export default {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: #555;
+  font-size: 14px;
 }
 
 .form-input {
@@ -258,32 +263,52 @@ export default {
   border-radius: 8px;
   font-size: 14px;
   background-color: white;
+  cursor: pointer;
+}
+
+.date-select:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
 }
 
 .gender-options {
   display: flex;
-  gap: 20px;
+  gap: 10px;
 }
 
-.radio-option {
+.gender-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 15px;
+  padding: 12px 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
+  font-size: 14px;
+  background-color: white;
+  color: #333;
   cursor: pointer;
   transition: all 0.3s;
+  text-align: center;
 }
 
-.radio-option.selected {
+.gender-label:hover:not(:disabled) {
+  border-color: #0a1f44;
+  color: #0a1f44;
+}
+
+input[type="radio"] {
+  display: none;
+}
+
+input[type="radio"]:checked + .gender-label {
   background-color: #0a1f44;
   color: white;
   border-color: #0a1f44;
 }
 
-.radio-option input[type="radio"] {
-  margin: 0;
+input[type="radio"]:disabled + .gender-label {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .save-button {
@@ -296,6 +321,9 @@ export default {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 200px;
 }
 
 .save-button:hover {
@@ -310,7 +338,14 @@ export default {
   
   .gender-options {
     flex-direction: column;
-    gap: 10px;
+  }
+  
+  .date-inputs {
+    flex-direction: column;
+  }
+  
+  .save-button {
+    max-width: 100%;
   }
 }
 </style>
