@@ -28,15 +28,21 @@
         <tbody>
           <tr v-for="book in filteredBooks" :key="book.id">
             <td>
-                <div class="book-info">
-                    <div class="book-image-placeholder"></div>
-                    {{ book.title }}
-                </div>
+              <div class="book-info">
+                <img 
+                  v-if="book.thumbnail" 
+                  :src="`http://localhost:3001/uploads/${book.thumbnail}`" 
+                  alt="Cover" 
+                  class="book-thumbnail"
+                >
+                <div v-else class="book-image-placeholder"></div>
+                {{ book.title }}
+              </div>
             </td>
-            <td>{{ getAuthorName(book.authorId) }}</td>
+            <td>{{ book.author ? book.author.name : 'Unknown' }}</td>
             <td>{{ book.category }}</td>
             <td><span class="type-tag" :class="book.type.toLowerCase()">{{ book.type }}</span></td>
-            <td>${{ book.price.toFixed(2) }}</td>
+            <td>${{ book.price }}</td>
             <td class="action-buttons">
                 <button @click="openEditModal(book)" class="btn-action edit"><font-awesome-icon icon="pencil-alt" /></button>
                 <button @click="deleteBook(book.id)" class="btn-action delete"><font-awesome-icon icon="trash" /></button>
@@ -47,22 +53,28 @@
     </div>
 
     <app-modal v-if="isModalVisible" @close="closeModal">
-        <template #header>{{ isEditing ? 'Edit Book' : 'Add New Book' }}</template>
-        <form @submit.prevent="saveBook" class="modal-form">
-            <input v-model="editableBook.title" placeholder="Title" required>
-            <select v-model="editableBook.authorId" required>
-                <option disabled value="">Select an author</option>
-                <option v-for="author in authors" :key="author.id" :value="author.id">{{ author.name }}</option>
-            </select>
-            <input v-model="editableBook.category" placeholder="Category" required>
-            <input v-model.number="editableBook.price" type="number" step="0.01" placeholder="Price" required>
-            <select v-model="editableBook.type" required>
-                <option>Physical</option>
-                <option>E-Book</option>
-            </select>
-            <textarea v-model="editableBook.description" placeholder="Description" required></textarea>
-            <button type="submit" class="btn btn-primary">{{ isEditing ? 'Save Changes' : 'Add Book' }}</button>
-        </form>
+      <template #header>{{ isEditing ? 'Edit Book' : 'Add New Book' }}</template>
+      <form @submit.prevent="saveBook" class="modal-form">
+        <input v-model="editableBook.title" placeholder="Title" required>
+        <select v-model="editableBook.authorId" required>
+          <option disabled value="">Select an author</option>
+          <option v-for="author in authors" :key="author.id" :value="author.id">{{ author.name }}</option>
+        </select>
+        <input v-model="editableBook.category" placeholder="Category" required>
+        <input v-model.number="editableBook.price" type="number" step="0.01" placeholder="Price" required>
+        <select v-model="editableBook.type" required>
+          <option>Physical</option>
+          <option>E-Book</option>
+        </select>
+        <textarea v-model="editableBook.description" placeholder="Description"></textarea>
+        
+        <div class="form-group">
+            <label for="coverImage">Cover Image</label>
+            <input type="file" @change="onFileSelected" accept="image/*" class="form-control-file">
+        </div>
+
+        <button type="submit" class="btn btn-primary">{{ isEditing ? 'Save Changes' : 'Add Book' }}</button>
+      </form>
     </app-modal>
   </div>
 </template>
@@ -81,41 +93,55 @@ export default {
     const isModalVisible = ref(false);
     const isEditing = ref(false);
     const editableBook = ref({});
+    const selectedFile = ref(null);
 
     const books = computed(() => store.state.books);
     const authors = computed(() => store.state.authors);
 
-    const getAuthorName = (authorId) => authors.value.find(a => a.id === authorId)?.name || 'Unknown';
-    
+    const onFileSelected = (event) => {
+      selectedFile.value = event.target.files[0];
+    };
+
     const filteredBooks = computed(() => {
         if (!searchTerm.value) return books.value;
         const lowerCaseSearch = searchTerm.value.toLowerCase();
         return books.value.filter(book => 
             book.title.toLowerCase().includes(lowerCaseSearch) ||
-            getAuthorName(book.authorId).toLowerCase().includes(lowerCaseSearch) ||
+            (book.author && book.author.name.toLowerCase().includes(lowerCaseSearch)) ||
             book.category.toLowerCase().includes(lowerCaseSearch)
         );
     });
 
     const openAddModal = () => {
         isEditing.value = false;
-        editableBook.value = { title: '', authorId: '', category: '', description: '', price: 0, type: 'Physical' };
+        editableBook.value = { title: '', authorId: null, category: '', description: '', price: 0, type: 'Physical' };
+        selectedFile.value = null;
         isModalVisible.value = true;
     };
 
     const openEditModal = (book) => {
         isEditing.value = true;
-        editableBook.value = { ...book };
+        // CORRECTED: Set authorId from the nested author object for the dropdown
+        editableBook.value = { ...book, authorId: book.author ? book.author.id : null };
+        selectedFile.value = null;
         isModalVisible.value = true;
     };
 
     const closeModal = () => { isModalVisible.value = false; };
     
-    const saveBook = () => {
+    const saveBook = async () => {
         if (isEditing.value) {
-            store.dispatch('updateBook', editableBook.value);
+            await store.dispatch('updateBook', editableBook.value);
+            // After updating, check if there's a file to upload
+            if (selectedFile.value) {
+                await store.dispatch('uploadCoverImage', { bookId: editableBook.value.id, file: selectedFile.value });
+            }
         } else {
-            store.dispatch('addBook', editableBook.value);
+            // For new books, we need to get the created book's ID back
+            const newBook = await store.dispatch('addBook', editableBook.value);
+            if (newBook && newBook.id && selectedFile.value) {
+                await store.dispatch('uploadCoverImage', { bookId: newBook.id, file: selectedFile.value });
+            }
         }
         closeModal();
     };
@@ -128,7 +154,7 @@ export default {
 
     return {
       searchTerm, filteredBooks, authors, isModalVisible, isEditing, editableBook,
-      getAuthorName, openAddModal, openEditModal, closeModal, saveBook, deleteBook
+      openAddModal, openEditModal, closeModal, saveBook, deleteBook, onFileSelected
     };
   }
 };
@@ -145,6 +171,7 @@ export default {
 .product-table th, .product-table td { padding: 1rem; border-bottom: 1px solid #eee; vertical-align: middle; }
 .product-table th { background-color: #1b263b; color: white; }
 .book-info { display: flex; align-items: center; gap: 1rem; }
+.book-thumbnail { width: 40px; height: 60px; object-fit: cover; border-radius: 4px; }
 .book-image-placeholder { width: 40px; height: 60px; background-color: #e0e0e0; border-radius: 4px; flex-shrink: 0; }
 .type-tag { padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.8rem; }
 .type-tag.physical { background-color: #cce5ff; color: #004085; }
@@ -154,4 +181,5 @@ export default {
 .btn-action.delete { color: #ef5350; }
 .modal-form { display: flex; flex-direction: column; gap: 1rem; }
 .modal-form input, .modal-form textarea, .modal-form select { padding: 0.75rem; border: 1px solid #ccc; border-radius: 5px; width: 100%; }
+.form-group { margin-top: 0.5rem; }
 </style>

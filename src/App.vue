@@ -1,30 +1,35 @@
 <template>
-  <div id="app-container">
-    <AppSidebar v-if="isAuthenticated" />
+  <AppSidebar v-if="isAuthenticated" />
+  
+  <div class="main-content">
     <router-view/>
   </div>
 </template>
-
 <script>
-import { computed } from 'vue';
-import { useStore } from 'vuex';
+
 import AppSidebar from './components/Sidebar.vue';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'App',
   components: {
-    AppSidebar,
+    AppSidebar
   },
-  setup() {
-    const store = useStore();
-    const isAuthenticated = computed(() => store.state.auth.isAuthenticated);
-
-    return {
-      isAuthenticated
-    };
+  computed: {
+    // We use a getter to know if we should show the sidebar
+    ...mapGetters('auth', ['isAuthenticated'])
+  },
+  created() {
+    // This part is important and correct - it fetches data on page load
+    this.$store.dispatch('fetchAuthors');
+    this.$store.dispatch('fetchBooks');
+    this.$store.dispatch('fetchUsers');
+    this.$store.dispatch('fetchOrders');
+    this.$store.dispatch('fetchReviews');
   }
-};
+}
 </script>
+
 
 <style>
 #app-container {
