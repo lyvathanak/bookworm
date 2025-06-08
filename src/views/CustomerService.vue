@@ -1,0 +1,2 @@
+<template><div><header class="mb-8"><h1 class="text-4xl font-bold text-navy">Customer Support</h1><p class="text-gray-500">This is a placeholder for a future support ticket system.</p></header></div></template>
+<script setup></script>
