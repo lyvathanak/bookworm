@@ -3,15 +3,19 @@
     <!-- User Info Section -->
     <div class="user-info">
       <div class="user-avatar">
-        <img 
-          v-if="props.user?.profileImage" 
-          :src="props.user.profileImage" 
-          :alt="props.user.firstName" 
+        <!-- Display user's profile image if available, otherwise display a static default image -->
+        <img
+          v-if="props.user?.profileImage"
+          :src="props.user.profileImage"
+          :alt="props.user.firstName"
           class="avatar-image"
         />
-        <div v-else class="avatar-placeholder">
-          <i class="fas fa-user"></i>
-        </div>
+        <img
+          v-else
+          src="https://placehold.co/80x80/CCCCCC/333333?text=User"
+          alt="Default User Avatar"
+          class="avatar-image"
+        />
       </div>
       <div class="user-details">
         <h3>{{ props.user?.firstName }} {{ props.user?.lastName }}</h3>
@@ -21,47 +25,48 @@
 
     <!-- Navigation Menu -->
     <nav class="sidebar-nav">
-      <button 
+      <button
         @click="setSection('profile')"
         :class="['nav-item', { active: props.activeSection === 'profile' }]"
       >
         <i class="fas fa-user"></i>
         <span>My Profile</span>
       </button>
-      
-      <button 
+
+      <button
         @click="setSection('orders')"
         :class="['nav-item', { active: props.activeSection === 'orders' }]"
       >
         <i class="fas fa-shopping-bag"></i>
         <span>My Orders</span>
       </button>
-      
-      <button 
+
+      <button
         @click="setSection('wishlist')"
         :class="['nav-item', { active: props.activeSection === 'wishlist' }]"
       >
         <i class="fas fa-heart"></i>
         <span>My Wishlist</span>
       </button>
-      
-      <button 
+
+      <button
         @click="setSection('address')"
         :class="['nav-item', { active: props.activeSection === 'address' }]"
       >
         <i class="fas fa-map-marker-alt"></i>
         <span>My Address</span>
       </button>
-      
-      <button 
+
+      <button
         @click="setSection('password')"
         :class="['nav-item', { active: props.activeSection === 'password' }]"
       >
         <i class="fas fa-key"></i>
         <span>Change Password</span>
       </button>
-      
-      <button @click="logout" class="nav-item logout">
+
+      <!-- Logout button now emits an event -->
+      <button @click="emit('logout')" class="nav-item logout">
         <i class="fas fa-sign-out-alt"></i>
         <span>Log out</span>
       </button>
@@ -70,9 +75,8 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-import { authStore } from '@/store/auth'
-//import { ref, onMounted } from 'vue';
+// import { useRouter } from 'vue-router' // Removed as router is not directly used here
+// import { authStore } from '@/store/auth' // Auth store not directly used here for logout logic, but for data display
 
 // eslint-disable-next-line no-undef
 const props = defineProps({
@@ -81,8 +85,8 @@ const props = defineProps({
 })
 
 // eslint-disable-next-line no-undef
-const emit = defineEmits(['set-section'])
-const router = useRouter()
+const emit = defineEmits(['set-section', 'logout']) // Added 'logout' to emitted events
+// const router = useRouter() // Removed as router is not directly used here
 
 const setSection = (section) => {
   emit('set-section', section)
@@ -96,16 +100,15 @@ const formatDate = (dateString) => {
   })
 }
 
-const logout = () => {
-  authStore.logout()
-  router.push('/')
-}
+// The actual logout logic will be handled by the parent (ProfileView)
+// which now listens for the 'logout' event emitted by this component.
+// This keeps the sidebar more modular and focused on UI.
 </script>
 
 <style scoped>
 .profile-sidebar {
   width: 280px;
-  background: #1e3a5f;
+  background: #0a1f44;
   color: white;
   display: flex;
   flex-direction: column;
@@ -136,10 +139,7 @@ const logout = () => {
   object-fit: cover;
 }
 
-.avatar-placeholder {
-  font-size: 32px;
-  color: rgba(255, 255, 255, 0.7);
-}
+/* Removed avatar-placeholder as we now use a default image */
 
 .user-details h3 {
   margin: 0 0 5px 0;
@@ -206,20 +206,20 @@ const logout = () => {
     width: 100%;
     min-height: auto;
   }
-  
+
   .sidebar-nav {
     display: flex;
     overflow-x: auto;
     padding: 10px 0;
   }
-  
+
   .nav-item {
     flex-shrink: 0;
     padding: 10px 15px;
     border-left: none;
     border-bottom: 3px solid transparent;
   }
-  
+
   .nav-item.active {
     border-left: none;
     border-bottom-color: #4a90e2;

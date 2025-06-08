@@ -43,7 +43,8 @@
         <a href="/cart" class="action-icon">
           <i class="fas fa-shopping-cart"></i>
         </a>
-        <a href="/auth/signin" class="action-icon">
+        <!-- Conditional link for the user icon -->
+        <a :href="profileLink" class="action-icon">
           <i class="fas fa-user"></i>
         </a>
       </div>
@@ -87,7 +88,8 @@
           </a>
         </li>
         <li class="mobile-nav-item mobile-actions">
-          <a href="/account" class="mobile-action-icon">
+          <!-- Conditional link for the mobile account icon -->
+          <a :href="profileLink" class="mobile-action-icon">
             <i class="fas fa-user"></i> Account
           </a>
         </li>
@@ -97,7 +99,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { authStore } from '@/store/auth' // Assuming authStore is correctly implemented and accessible
 
 const searchQuery = ref('')
 const isMenuOpen = ref(false)
@@ -109,6 +112,11 @@ const handleSearch = () => {
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
 }
+
+// Computed property to determine the profile link based on authentication status
+const profileLink = computed(() => {
+  return authStore.isAuthenticated ? '/profile' : '/auth/signin';
+});
 </script>
 
 <style scoped>

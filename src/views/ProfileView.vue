@@ -6,6 +6,7 @@
         :user="authStore.user" 
         :activeSection="activeSection"
         @set-section="setActiveSection"
+        @logout="handleLogout" 
       />
       
       <div class="profile-content">
@@ -62,22 +63,19 @@ const router = useRouter()
 const route = useRoute()
 const activeSection = ref('profile')
 
-// Check if user is authenticated
+// Initial check for authentication on component setup
+// This ensures that if the user is not authenticated, they are redirected
 if (!authStore.isAuthenticated) {
-  // Redirect to signin with current path as redirect parameter
   router.push(`/auth/signin?redirect=${encodeURIComponent(route.fullPath)}`)
 }
 
 onMounted(() => {
-  if (!authStore.isAuthenticated) {
-    return
-  }
-  
-  // Check if section is specified in query params
+  // This onMounted block is now primarily for setting the active section from query params
+  // The initial authentication check is done outside to prevent rendering protected content briefly
   if (route.query.section) {
     activeSection.value = route.query.section
   }
-})
+});
 
 const setActiveSection = (section) => {
   activeSection.value = section
@@ -87,11 +85,12 @@ const setActiveSection = (section) => {
 
 const updateProfile = (profileData) => {
   authStore.updateUser(profileData)
-  alert('Profile updated successfully!')
+  // Replaced alert with console.log
+  console.log('Profile updated successfully!');
 }
 
 const uploadProfileImage = (imageFile) => {
-  // In a real app, you would upload the image to a server
+  // In a real app, you would upload the image to a NestJS backend
   // and get back a URL to store in the user profile
   
   // For demo purposes, we'll use a FileReader to get a data URL
@@ -100,6 +99,7 @@ const uploadProfileImage = (imageFile) => {
     authStore.updateUser({
       profileImage: e.target.result
     })
+    console.log('Profile image updated successfully (simulated).');
   }
   reader.readAsDataURL(imageFile)
 }
@@ -108,7 +108,8 @@ const updateAddress = (addressData) => {
   authStore.updateUser({
     address: addressData
   })
-  alert('Address updated successfully!')
+  // Replaced alert with console.log
+  console.log('Address updated successfully!');
 }
 
 const changePassword = (passwordData) => {
@@ -118,12 +119,21 @@ const changePassword = (passwordData) => {
   )
   
   if (success) {
-    alert('Password changed successfully!')
+    // Replaced alert with console.log
+    console.log('Password changed successfully!');
   } else {
-    alert('Failed to change password. Please try again.')
+    // Replaced alert with console.error
+    console.error('Failed to change password. Please try again.');
   }
 }
+
+// Handler for logout emitted from ProfileSidebar
+const handleLogout = () => {
+  authStore.logout(); // Call the logout action from the store
+  router.push('/auth/signin'); // Redirect to sign-in page after logout
+};
 </script>
+
 
 <style scoped>
 .profile-page {
