@@ -1,4 +1,3 @@
-```vue
 <template>
   <div class="book-description-page">
     <div class="breadcrumb">
@@ -557,31 +556,70 @@ const decreaseQuantity = () => {
 }
 
 // Cart functions
+// Add this helper function at the top of your script setup
+const parsePrice = (price) => {
+  if (typeof price === 'number') {
+    return price;
+  }
+  if (typeof price === 'string') {
+    // Remove dollar sign and any other non-numeric characters except decimal point
+    const cleanPrice = price.replace(/[^0-9.]/g, '');
+    const parsed = parseFloat(cleanPrice);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
+
+// Update your addToCart function in DescriptionPage.vue
 const addToCart = () => {
-  // Check if item is already in cart
-  const existingItem = cartItems.value.find(item => item.id === book.value.id)
-  
-  if (existingItem) {
-    existingItem.quantity += quantity.value
-  } else {
-    cartItems.value.push({
+  try {
+    // Load existing cart items
+    const existingCart = JSON.parse(localStorage.getItem('cartItems') || '[]');
+    
+    // Check if item is already in cart
+    const existingItemIndex = existingCart.findIndex(item => item.id === book.value.id);
+    
+    const cartItem = {
       id: book.value.id,
       title: book.value.title,
-      price: book.value.price,
+      author: book.value.author, // Make sure to include author
+      price: parsePrice(book.value.price), // Parse price to number
       coverImage: book.value.coverImage,
+      format: book.value.format || 'Paperback',
       quantity: quantity.value
-    })
+    };
+    
+    if (existingItemIndex !== -1) {
+      // Item exists, update quantity
+      existingCart[existingItemIndex].quantity += quantity.value;
+    } else {
+      // New item, add to cart
+      existingCart.push(cartItem);
+    }
+    
+    // Save updated cart to localStorage
+    localStorage.setItem('cartItems', JSON.stringify(existingCart));
+    
+    // Update local cartItems ref
+    cartItems.value = existingCart;
+    
+    // Dispatch event to update cart count in navbar
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    
+    // Show feedback
+    showAddedToCart.value = true;
+    setTimeout(() => {
+      showAddedToCart.value = false;
+    }, 2000);
+    
+    // Reset quantity to 1 after adding to cart
+    quantity.value = 1;
+    
+  } catch (error) {
+    console.error('Error adding item to cart:', error);
+    alert('Failed to add item to cart. Please try again.');
   }
-  
-  // Save to localStorage (optional)
-  localStorage.setItem('cartItems', JSON.stringify(cartItems.value))
-  
-  // Show feedback
-  showAddedToCart.value = true
-  setTimeout(() => {
-    showAddedToCart.value = false
-  }, 2000)
-}
+};
 
 // Wishlist functions
 const toggleWishlist = () => {

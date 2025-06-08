@@ -80,6 +80,20 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const cartItems = ref([]);
 
+// Helper function to parse price from string or number
+const parsePrice = (price) => {
+  if (typeof price === 'number') {
+    return price;
+  }
+  if (typeof price === 'string') {
+    // Remove dollar sign and any other non-numeric characters except decimal point
+    const cleanPrice = price.replace(/[^0-9.]/g, '');
+    const parsed = parseFloat(cleanPrice);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
+
 // Load cart items from localStorage when component mounts
 onMounted(() => {
   try {
@@ -87,11 +101,17 @@ onMounted(() => {
     if (storedCart) {
       cartItems.value = JSON.parse(storedCart).map(item => ({
         ...item,
-        quantity: item.quantity ? parseInt(item.quantity) : 1, // Ensure quantity is a number
+        quantity: item.quantity ? parseInt(item.quantity) : 1,
+        // Ensure price is always a number
+        price: parsePrice(item.price)
       }));
+      
+      // Save the cleaned cart back to localStorage
+      updateCart();
     }
   } catch (error) {
     console.error('Error loading cart from localStorage:', error);
+    cartItems.value = [];
   }
 });
 
@@ -126,7 +146,16 @@ const confirmRemoveItem = (id) => {
 
 const updateCart = () => {
   try {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems.value));
+    // Ensure all prices are numbers before saving
+    const cleanedCart = cartItems.value.map(item => ({
+      ...item,
+      price: parsePrice(item.price),
+      quantity: parseInt(item.quantity) || 1
+    }));
+    localStorage.setItem('cartItems', JSON.stringify(cleanedCart));
+    
+    // Dispatch event to update cart count in navbar
+    window.dispatchEvent(new CustomEvent('cart-updated'));
   } catch (error) {
     console.error('Error saving cart to localStorage:', error);
   }
@@ -134,15 +163,19 @@ const updateCart = () => {
 
 // Computed properties for totals
 const subtotal = computed(() => {
-  return cartItems.value.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  return cartItems.value.reduce((sum, item) => {
+    const price = parsePrice(item.price);
+    const quantity = parseInt(item.quantity) || 1;
+    return sum + (price * quantity);
+  }, 0);
 });
 
 const tax = computed(() => {
-  return subtotal.value * 0.2; // 20% tax rate to match the image ($11.63 * 0.2 = $2.33, rounded to $2.35)
+  return subtotal.value * 0.2; // 20% tax rate
 });
 
 const total = computed(() => {
-  return subtotal.value + tax.value; // No shipping cost in the image
+  return subtotal.value + tax.value;
 });
 </script>
 

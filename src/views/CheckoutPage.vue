@@ -158,6 +158,20 @@ const isProcessing = ref(false);
 // Router for navigation
 const router = useRouter();
 
+// Helper function to parse price from string or number
+const parsePrice = (price) => {
+  if (typeof price === 'number') {
+    return price;
+  }
+  if (typeof price === 'string') {
+    // Remove dollar sign and any other non-numeric characters except decimal point
+    const cleanPrice = price.replace(/[^0-9.]/g, '');
+    const parsed = parseFloat(cleanPrice);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
+
 // Load cart items from localStorage on mount
 onMounted(() => {
   try {
@@ -166,16 +180,23 @@ onMounted(() => {
       cartItems.value = JSON.parse(storedCart).map(item => ({
         ...item,
         quantity: item.quantity ? parseInt(item.quantity) : 1,
+        // Ensure price is always a number
+        price: parsePrice(item.price)
       }));
     }
   } catch (error) {
     console.error('Error loading cart from localStorage:', error);
+    cartItems.value = [];
   }
 });
 
 // Computed properties for summary
 const subtotal = computed(() => {
-  return cartItems.value.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  return cartItems.value.reduce((sum, item) => {
+    const price = parsePrice(item.price);
+    const quantity = parseInt(item.quantity) || 1;
+    return sum + (price * quantity);
+  }, 0);
 });
 
 const tax = computed(() => {
@@ -275,7 +296,7 @@ const processCheckout = async () => {
           author: item.author,
           coverImage: item.coverImage,
           quantity: item.quantity,
-          price: item.price,
+          price: parsePrice(item.price), // Ensure price is a number
           format: item.format || 'Paperback',
           paymentMethod: paymentMethodDisplay.value,
           deliveryOption: deliveryOption.value,
