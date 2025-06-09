@@ -1,6 +1,8 @@
 <template>
   <div class="my-wishlist">
-    <h2>My Wishlist</h2>
+    <div class="section-header">
+      <h2>My Wishlist</h2>
+    </div>
     
     <div v-if="wishlistItems.length === 0" class="empty-state">
       <i class="fas fa-heart empty-icon"></i>
@@ -9,7 +11,7 @@
     </div>
     
     <div v-else class="wishlist-container">
-      <div class="wishlist-row">
+      <div class="wishlist-stack">
         <div v-for="item in wishlistItems" :key="item.id" class="wishlist-item">
           <div class="book-cover">
             <img :src="item.coverImage || '/placeholder.svg?height=150&width=100'" :alt="item.title" class="book-cover-img" />
@@ -91,10 +93,25 @@ export default {
 </script>
 
 <style scoped>
-h2 {
+.my-wishlist {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.section-header {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.section-header h2 {
   font-size: 24px;
   color: #666;
-  margin-bottom: 25px;
+  margin: 0;
+  font-weight: 600;
 }
 
 .empty-state {
@@ -129,14 +146,12 @@ h2 {
   position: relative;
 }
 
-.wishlist-row {
+.wishlist-stack {
+  max-height: 400px; /* Adjust height as needed */
+  overflow-y: auto; /* Vertical scroll */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 20px;
-  overflow-x: auto;
-  padding-bottom: 20px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
 }
 
 .wishlist-item {
@@ -147,7 +162,7 @@ h2 {
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   padding: 15px;
-  min-width: 300px;
+  min-width: 0;
   flex-shrink: 0;
 }
 
@@ -233,6 +248,20 @@ h2 {
 
 .remove-link:hover {
   text-decoration: underline;
+}
+
+/* Custom scrollbar styling */
+.wishlist-stack::-webkit-scrollbar {
+  width: 8px;
+}
+
+.wishlist-stack::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+.wishlist-stack::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
 }
 
 @media (max-width: 768px) {
