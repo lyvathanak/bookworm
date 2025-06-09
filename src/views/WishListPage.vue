@@ -2,7 +2,7 @@
   <div class="wishlist-page">
     <!-- Breadcrumb -->
     <div class="breadcrumb">
-      <a href="/home" class="breadcrumb-link home">Home</a>
+      <router-link to="/home" class="breadcrumb-link home">Home</router-link>
       <span class="breadcrumb-separator">/</span>
       <span class="breadcrumb-current">Wish List</span>
     </div>
@@ -26,7 +26,7 @@
         <!-- Dynamic Book Items -->
         <div class="book-item" v-for="item in displayedItems" :key="item.id">
           <div class="book-cover" @click="goToBookDetail(item.id)">
-            <img v-if="item.coverImage" :src="item.coverImage" :alt="item.title" class="book-cover-img">
+            <img v-if="item.image || item.coverImage" :src="item.image || item.coverImage" :alt="item.title" class="book-cover-img">
             <div v-else class="book-cover-placeholder"></div>
           </div>
           <h3 class="book-title">{{ item.title }}</h3>
@@ -62,10 +62,10 @@ const wishlistItems = ref([])
 const displayCount = ref(8)
 const cartItems = ref([])
 
-// Load wishlist items from localStorage
+// Load wishlist items from localStorage (using consistent key)
 const loadWishlist = () => {
   try {
-    const savedWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
+    const savedWishlist = JSON.parse(localStorage.getItem('bookworm-wishlist') || '[]')
     wishlistItems.value = savedWishlist
   } catch (error) {
     console.error('Error loading wishlist:', error)
@@ -76,7 +76,7 @@ const loadWishlist = () => {
 // Load cart items from localStorage
 const loadCart = () => {
   try {
-    cartItems.value = JSON.parse(localStorage.getItem('cartItems') || '[]')
+    cartItems.value = JSON.parse(localStorage.getItem('bookworm-cart') || '[]')
   } catch (error) {
     console.error('Error loading cart:', error)
     cartItems.value = []
@@ -103,8 +103,8 @@ const removeFromWishlist = (bookId) => {
   // Update local state
   wishlistItems.value = wishlistItems.value.filter(item => item.id !== bookId)
   
-  // Update localStorage
-  localStorage.setItem('wishlist', JSON.stringify(wishlistItems.value))
+  // Update localStorage with consistent key
+  localStorage.setItem('bookworm-wishlist', JSON.stringify(wishlistItems.value))
 }
 
 // Function to add item to cart
@@ -118,14 +118,16 @@ const addToCart = (book) => {
     cartItems.value.push({
       id: book.id,
       title: book.title,
+      author: book.author,
       price: book.price,
-      coverImage: book.coverImage,
+      image: book.image || book.coverImage,
+      isbn: `ISBN${book.id}${Math.floor(Math.random() * 1000000)}`,
       quantity: 1
     })
   }
   
-  // Save to localStorage
-  localStorage.setItem('cartItems', JSON.stringify(cartItems.value))
+  // Save to localStorage with consistent key
+  localStorage.setItem('bookworm-cart', JSON.stringify(cartItems.value))
   
   // Show confirmation
   alert(`"${book.title}" added to cart!`)
