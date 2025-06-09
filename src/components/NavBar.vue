@@ -1,14 +1,12 @@
 <template>
   <header class="header">
     <div class="container">
-      <!-- Logo -->
       <div class="logo">
         <a href="/home">
           <img src="../assets/blueLogo.png" alt="Bookworm Logo" class="logo-image" />
         </a>
       </div>
       
-      <!-- Navigation -->
       <nav class="navigation">
         <ul class="nav-links">
           <li class="nav-item">
@@ -20,7 +18,6 @@
         </ul>
       </nav>
       
-      <!-- Search Bar -->
       <div class="search-container">
         <form @submit.prevent="handleSearch" class="search-form">
           <input 
@@ -28,14 +25,13 @@
             v-model="searchQuery" 
             placeholder="Search by title or author" 
             class="search-input"
-          />
+            @input="updateSearch" />
           <button type="submit" class="search-button">
             <i class="fas fa-search"></i>
           </button>
         </form>
       </div>
       
-      <!-- User Actions -->
       <div class="user-actions">
         <a href="/wishlist" class="action-icon">
           <i class="fas fa-heart"></i>
@@ -43,13 +39,11 @@
         <a href="/cart" class="action-icon">
           <i class="fas fa-shopping-cart"></i>
         </a>
-        <!-- Conditional link for the user icon -->
         <a :href="profileLink" class="action-icon">
           <i class="fas fa-user"></i>
         </a>
       </div>
 
-      <!-- Mobile Menu Toggle -->
       <div class="mobile-menu-toggle" @click="toggleMenu">
         <div class="toggle-icon"></div>
         <div class="toggle-icon"></div>
@@ -71,7 +65,7 @@
               v-model="searchQuery" 
               placeholder="Search by title or author" 
               class="mobile-search-input"
-            />
+              @input="updateSearch" />
             <button type="submit" class="mobile-search-button">
               <i class="fas fa-search"></i>
             </button>
@@ -88,7 +82,6 @@
           </a>
         </li>
         <li class="mobile-nav-item mobile-actions">
-          <!-- Conditional link for the mobile account icon -->
           <a :href="profileLink" class="mobile-action-icon">
             <i class="fas fa-user"></i> Account
           </a>
@@ -100,13 +93,27 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router' // Import useRouter
 import { authStore } from '@/store/auth' // Assuming authStore is correctly implemented and accessible
+
+const router = useRouter() // Initialize useRouter
 
 const searchQuery = ref('')
 const isMenuOpen = ref(false)
 
+// Update search query in route on input
+const updateSearch = () => {
+  router.push({ path: '/home', query: { search: searchQuery.value.trim() || undefined } })
+}
+
+// The handleSearch function will also trigger a search.
+// You can keep it as is, or remove it if updateSearch is sufficient for your needs.
 const handleSearch = () => {
-  console.log('Searching for:', searchQuery.value)
+  // This will trigger the updateSearch as well since it's bound to @input.
+  // You might want to remove the @submit.prevent from the form if you want
+  // only @input to drive the search. If you want a specific action on submit,
+  // then keep this. For now, I'll assume you want the submit to also update the URL.
+  updateSearch(); 
 }
 
 const toggleMenu = () => {

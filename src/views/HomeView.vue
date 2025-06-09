@@ -1,8 +1,6 @@
 <template>
   <div class="home-view">
-    <!-- Book Grid -->
     <div class="book-grid">
-      <!-- Display books from the array using v-for -->
       <div class="book-item" v-for="book in displayedBooks" :key="book.id">
         <div class="book-cover" @click="goToBookDetail(book.id)">
           <img :src="book.coverImage" :alt="book.title" class="book-cover-img" />
@@ -31,7 +29,6 @@
       </div>
     </div>
 
-    <!-- More Button - show only if there are more books to display -->
     <div class="more-container" v-if="hasMoreBooks">
       <button class="more-btn" @click="loadMore">More</button>
     </div>
@@ -39,8 +36,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, watch } from 'vue'; // Added onMounted and watch
+import { useRouter, useRoute } from 'vue-router'; // Added useRoute
 import book1Image from '@/assets/book1.png';
 import book2Image from '@/assets/book2.png';
 import book3Image from '@/assets/book3.png';
@@ -51,6 +48,7 @@ import book7Image from '@/assets/book7.png';
 import book8Image from '@/assets/book8.png';
 
 const router = useRouter();
+const route = useRoute(); // Initialize useRoute
 
 // Define the complete list of books
 const allBooks = ref([
@@ -152,17 +150,39 @@ const allBooks = ref([
   },
 ]);
 
-// Initialize to display only the first 8 books
+// Search functionality
+const filteredBooks = computed(() => {
+  const query = (route.query.search || '').toLowerCase().trim();
+  return allBooks.value.filter(book =>
+    book.title.toLowerCase().includes(query) ||
+    book.author.toLowerCase().includes(query)
+  );
+});
+
+// Initialize displayCount based on whether there's a search query
 const displayCount = ref(8);
+
+// Watch for changes in the search query and reset displayCount if needed
+watch(
+  () => route.query.search,
+  (newSearchQuery) => {
+    if (newSearchQuery) {
+      displayCount.value = filteredBooks.value.length; // Show all matching books
+    } else {
+      displayCount.value = 8; // Reset to initial display count when search is cleared
+    }
+  },
+  { immediate: true } // Run immediately when component is mounted
+);
 
 // Computed property for books to display
 const displayedBooks = computed(() => {
-  return allBooks.value.slice(0, displayCount.value);
+  return filteredBooks.value.slice(0, displayCount.value);
 });
 
 // Computed property to check if there are more books to display
 const hasMoreBooks = computed(() => {
-  return displayCount.value < allBooks.value.length;
+  return displayCount.value < filteredBooks.value.length;
 });
 
 // Add to cart function - Append to localStorage without navigating
@@ -210,8 +230,8 @@ const goToBookDetail = (bookId) => {
 // Load more functionality - increase the number of displayed books
 const loadMore = () => {
   displayCount.value += 4; // Load 4 more books
-  if (displayCount.value > allBooks.value.length) {
-    displayCount.value = allBooks.value.length; // Don't exceed the array length
+  if (displayCount.value > filteredBooks.value.length) { // Changed allBooks to filteredBooks
+    displayCount.value = filteredBooks.value.length; // Don't exceed the array length
   }
 };
 
