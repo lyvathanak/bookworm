@@ -44,11 +44,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { authStore } from '@/store/auth'
 
 const router = useRouter()
 const isLoading = ref(false)
 
-// Form data
 const firstName = ref('')
 const lastName = ref('')
 const dob = ref('')
@@ -57,10 +57,44 @@ const email = ref('')
 const contact = ref('')
 const password = ref('')
 
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return re.test(email)
+}
+
+const validatePassword = (password) => {
+  const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+  return re.test(password)
+}
+
 const handleSignup = async () => {
   isLoading.value = true
   
   try {
+    if (!firstName.value || !lastName.value || !dob.value || !gender.value || !email.value || !contact.value || !password.value) {
+      alert('Please fill in all fields.')
+      return
+    }
+
+    if (!validateEmail(email.value)) {
+      alert('Please enter a valid email address.')
+      return
+    }
+
+    if (!validatePassword(password.value)) {
+      alert('Password must be at least 8 characters long and include uppercase, lowercase, and a number.')
+      return
+    }
+
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      const user = JSON.parse(storedUser)
+      if (user.email === email.value) {
+        alert('Email already in use!')
+        return
+      }
+    }
+
     const userData = {
       firstName: firstName.value,
       lastName: lastName.value,
@@ -74,9 +108,11 @@ const handleSignup = async () => {
     const response = await simulateSignUp(userData)
     
     if (response.success) {
-      localStorage.setItem('signupData', JSON.stringify(response.user))
-      alert('Account created successfully! Please sign in.')
-      router.push('/auth/signin')
+      authStore.initUser(response.user)
+      authStore.saveToStorage()
+      console.log('Saved user data:', localStorage.getItem('user'))
+      alert('Account created successfully! Please sign in to continue.')
+      router.push('/auth/signin?redirect=/')
     } else {
       alert('Registration failed. Please try again.')
     }
@@ -97,6 +133,7 @@ const simulateSignUp = async (userData) => {
         lastName: userData.lastName,
         email: userData.email,
         contact: userData.contact,
+        password: userData.password,
         profileImage: null,
         createdAt: new Date().toISOString(),
         dob: userData.dob,

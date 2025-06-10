@@ -8,6 +8,7 @@ import CartPageVue from '@/views/CartPage.vue';
 import AuthorProfile from '@/views/AuthorProfile.vue';
 import BookList from '@/views/BookList.vue';
 import AuthPage from '@/views/AuthPage.vue';
+import { authStore } from '@/store/auth'; // Import the auth store
 
 const routes = [
   {
@@ -34,6 +35,7 @@ const routes = [
     path: '/checkout',
     name: 'checkout',
     component: CheckoutPageVue,
+    meta: { requiresAuth: true } // Requires authentication
   },
   {
     path: '/cart',
@@ -50,12 +52,11 @@ const routes = [
     name: 'book-list',
     component: BookList,
   },
-
-    {
+  {
     path: '/profile',
     name: 'profile',
     component: () => import('../views/ProfileView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true } // Requires authentication
   },
   {
     path: '/auth',
@@ -83,6 +84,18 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = authStore.isAuthenticated;
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    // If the route requires authentication and user is not authenticated
+    const redirectTo = to.fullPath; // Store the intended destination
+    next(`/auth/signin?redirect=${encodeURIComponent(redirectTo)}`);
+  } else {
+    next(); // Proceed to the route
+  }
 });
 
 export default router;

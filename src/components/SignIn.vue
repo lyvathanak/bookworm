@@ -37,19 +37,48 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { authStore } from '@/store/auth'
 
 const router = useRouter()
 const route = useRoute()
 const isLoading = ref(false)
 
-// Form data
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
 
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return re.test(email)
+}
+
+const validatePassword = (password) => {
+  const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+  return re.test(password)
+}
+
+onMounted(() => {
+  authStore.loadFromStorage() // Ensure data is loaded on mount
+})
+
 const handleSignin = async () => {
+  if (!email.value || !password.value) {
+    alert('Please enter email and password.')
+    return
+  }
+
+  if (!validateEmail(email.value)) {
+    alert('Please enter a valid email address.')
+    return
+  }
+
+  if (!validatePassword(password.value)) {
+    alert('Password must be at least 8 characters long and include uppercase, lowercase, and a number.')
+    return
+  }
+
   isLoading.value = true
   try {
     const response = await simulateSignIn({
@@ -57,10 +86,12 @@ const handleSignin = async () => {
       password: password.value
     })
     
+    console.log('Signin response:', response)
     if (response.success) {
-      const user = response.user
-      localStorage.setItem('user', JSON.stringify(user))
-      const redirectTo = route.query.redirect || '/'
+      authStore.initUser(response.user)
+      authStore.saveToStorage()
+      alert('Sign in successful!')
+      const redirectTo = route.query.redirect || '/home'
       router.push(redirectTo)
     } else {
       alert('Invalid credentials')
@@ -70,19 +101,29 @@ const handleSignin = async () => {
     alert('Sign in failed. Please try again.')
   } finally {
     isLoading.value = false
+    console.log('Auth state after signin:', authStore.isAuthenticated, authStore.user)
   }
 }
 
 const simulateSignIn = async (credentials) => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // Retrieve signup data if available
-      const signupData = localStorage.getItem('signupData')
-      if (signupData && JSON.parse(signupData).email === credentials.email) {
-        resolve({
-          success: true,
-          user: JSON.parse(signupData)
-        })
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        const user = JSON.parse(storedUser)
+        console.log('Attempted login - Email:', credentials.email, 'Password:', credentials.password)
+        console.log('Stored user:', user)
+        if (user.email === credentials.email && user.password === credentials.password) {
+          resolve({
+            success: true,
+            user: user
+          })
+        } else {
+          resolve({
+            success: false,
+            user: null
+          })
+        }
       } else {
         resolve({
           success: false,

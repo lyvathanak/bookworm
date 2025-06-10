@@ -2,36 +2,6 @@
   <div class="checkout-container">
     <h1>Check out</h1>
 
-    <div class="account-section">
-      <p>Do you have an account?</p>
-      <div class="radio-group">
-        <label>
-          <input type="radio" name="account" value="yes" v-model="hasAccount" /> Yes
-        </label>
-        <label>
-          <input type="radio" name="account" value="no" v-model="hasAccount" /> No
-        </label>
-      </div>
-    </div>
-
-    <div class="login-form" v-if="hasAccount === 'yes'">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" v-model="email" />
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" v-model="password" />
-      </div>
-      <div class="form-options">
-        <label>
-          <input type="checkbox" v-model="rememberMe" /> Remember me
-        </label>
-        <a href="#" class="forgot-password">Forgot password?</a>
-      </div>
-      <button class="sign-in-btn" @click="signIn">Sign in</button>
-    </div>
-
     <div class="delivery-section">
       <h2>Choose your delivery option</h2>
       <div class="delivery-options">
@@ -90,7 +60,6 @@
       <h2>Check out summary</h2>
       <p>Check your check out summary before process to payment</p>
       
-      <!-- Display cart items -->
       <div class="cart-items-preview" v-if="cartItems.length > 0">
         <h3>Order Items ({{ cartItems.length }})</h3>
         <div v-for="item in cartItems" :key="item.id" class="cart-item-preview">
@@ -133,162 +102,74 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { authStore } from '@/store/auth';
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { authStore } from '@/store/auth'
 
-// State for account section
-const hasAccount = ref('no');
-const email = ref('');
-const password = ref('');
-const rememberMe = ref(false);
+const router = useRouter()
+const deliveryOption = ref('address')
+const selectedLocation = ref('')
+const addressDetail = ref('')
+const paymentMethod = ref('cod')
+const cartItems = ref([])
+const isProcessing = ref(false)
 
-// State for delivery section
-const deliveryOption = ref('address');
-const selectedLocation = ref('');
-const addressDetail = ref('');
-
-// State for payment section
-const paymentMethod = ref('cod');
-
-// State for cart items
-const cartItems = ref([]);
-const isProcessing = ref(false);
-
-// Router for navigation
-const router = useRouter();
-
-// Helper function to parse price from string or number
 const parsePrice = (price) => {
-  if (typeof price === 'number') {
-    return price;
-  }
+  if (typeof price === 'number') return price
   if (typeof price === 'string') {
-    // Remove dollar sign and any other non-numeric characters except decimal point
-    const cleanPrice = price.replace(/[^0-9.]/g, '');
-    const parsed = parseFloat(cleanPrice);
-    return isNaN(parsed) ? 0 : parsed;
+    const cleanPrice = price.replace(/[^0-9.]/g, '')
+    const parsed = parseFloat(cleanPrice)
+    return isNaN(parsed) ? 0 : parsed
   }
-  return 0;
-};
+  return 0
+}
 
-// Load cart items from localStorage on mount
 onMounted(() => {
-  try {
-    const storedCart = localStorage.getItem('cartItems');
-    if (storedCart) {
-      cartItems.value = JSON.parse(storedCart).map(item => ({
-        ...item,
-        quantity: item.quantity ? parseInt(item.quantity) : 1,
-        // Ensure price is always a number
-        price: parsePrice(item.price)
-      }));
-    }
-  } catch (error) {
-    console.error('Error loading cart from localStorage:', error);
-    cartItems.value = [];
+  const storedCart = localStorage.getItem('cartItems')
+  if (storedCart) {
+    cartItems.value = JSON.parse(storedCart).map(item => ({
+      ...item,
+      quantity: item.quantity ? parseInt(item.quantity) : 1,
+      price: parsePrice(item.price)
+    }))
   }
-});
+})
 
-// Computed properties for summary
 const subtotal = computed(() => {
-  return cartItems.value.reduce((sum, item) => {
-    const price = parsePrice(item.price);
-    const quantity = parseInt(item.quantity) || 1;
-    return sum + (price * quantity);
-  }, 0);
-});
+  return cartItems.value.reduce((sum, item) => sum + (parsePrice(item.price) * (parseInt(item.quantity) || 1)), 0)
+})
 
-const tax = computed(() => {
-  return subtotal.value * 0.2; // 20% tax rate to match the cart page
-});
-
-const deliveryFee = computed(() => {
-  return deliveryOption.value === 'address' ? 2.5 : 0; // $2.5 for delivery, $0 for shelf-pick up
-});
-
-const total = computed(() => {
-  return subtotal.value + tax.value + deliveryFee.value;
-});
-
-const paymentMethodDisplay = computed(() => {
-  const methods = {
-    'aba': 'ABA',
-    'acleda': 'ACLEDA',
-    'paypal': 'PayPal',
-    'cod': 'Cash on Deliver',
-  };
-  return methods[paymentMethod.value] || 'Select a payment method';
-});
-
-// Methods
-const signIn = async () => {
-  if (!email.value || !password.value) {
-    alert('Please enter email and password.');
-    return;
-  }
-
-  try {
-    // Simulate sign-in (replace with actual authentication logic)
-    const response = await simulateSignIn({ email: email.value, password: password.value });
-    
-    if (response.success) {
-      authStore.initUser(response.user);
-      alert('Signed in successfully!');
-    } else {
-      alert('Invalid credentials');
-    }
-  } catch (error) {
-    console.error('Sign in error:', error);
-    alert('Sign in failed. Please try again.');
-  }
-};
-
-// Simulate sign in - replace with your actual API call
-const simulateSignIn = async (credentials) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        success: true,
-        user: {
-          id: Date.now(),
-          firstName: 'John',
-          lastName: 'Doe',
-          email: credentials.email,
-          contact: '',
-          createdAt: new Date().toISOString()
-        }
-      });
-    }, 1000);
-  });
-};
+const tax = computed(() => subtotal.value * 0.2)
+const deliveryFee = computed(() => deliveryOption.value === 'address' ? 2.5 : 0)
+const total = computed(() => subtotal.value + tax.value + deliveryFee.value)
+const paymentMethodDisplay = computed(() => ({
+  'aba': 'ABA',
+  'acleda': 'ACLEDA',
+  'paypal': 'PayPal',
+  'cod': 'Cash on Deliver'
+}[paymentMethod.value] || 'Select a payment method'))
 
 const processCheckout = async () => {
-  // Validate cart
   if (cartItems.value.length === 0) {
-    alert('Your cart is empty.');
-    return;
+    alert('Your cart is empty.')
+    return
   }
 
-  // Validate delivery details if delivery option is selected
   if (deliveryOption.value === 'address' && (!selectedLocation.value || !addressDetail.value)) {
-    alert('Please provide location and address details.');
-    return;
+    alert('Please provide location and address details.')
+    return
   }
 
-  // Validate payment method
   if (!paymentMethod.value) {
-    alert('Please select a payment method.');
-    return;
+    alert('Please select a payment method.')
+    return
   }
 
-  isProcessing.value = true;
+  isProcessing.value = true
 
   try {
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2000))
 
-    // Add each item as a separate order to the user's order history
     if (authStore.isAuthenticated) {
       cartItems.value.forEach(item => {
         authStore.addOrder({
@@ -296,39 +177,30 @@ const processCheckout = async () => {
           author: item.author,
           coverImage: item.coverImage,
           quantity: item.quantity,
-          price: parsePrice(item.price), // Ensure price is a number
+          price: parsePrice(item.price),
           format: item.format || 'Paperback',
           paymentMethod: paymentMethodDisplay.value,
           deliveryOption: deliveryOption.value,
           orderDate: new Date().toISOString(),
           status: 'Order in Progress'
-        });
-      });
-    }
-
-    // Success message
-    alert('Checkout successful! Thank you for your purchase.');
-
-    // Clear cart from localStorage
-    localStorage.removeItem('cartItems');
-    
-    // Dispatch event to update cart count in navbar
-    window.dispatchEvent(new CustomEvent('cart-updated'));
-
-    // Navigate to profile orders page if user is authenticated, otherwise go to home
-    if (authStore.isAuthenticated) {
-      router.push('/profile?section=orders');
+        })
+      })
+      localStorage.removeItem('cartItems')
+      window.dispatchEvent(new CustomEvent('cart-updated'))
+      alert('Checkout successful! Thank you for your purchase.')
+      router.push('/profile?section=orders')
+    } else if (localStorage.getItem('signupData')) {
+      router.push('/auth/signin?redirect=/checkout')
     } else {
-      router.push({ name: 'home' });
+      router.push('/auth/signup?redirect=/checkout')
     }
-
   } catch (error) {
-    console.error('Checkout error:', error);
-    alert('Checkout failed. Please try again.');
+    console.error('Checkout error:', error)
+    alert('Checkout failed. Please try again.')
   } finally {
-    isProcessing.value = false;
+    isProcessing.value = false
   }
-};
+}
 </script>
 
 <style scoped>

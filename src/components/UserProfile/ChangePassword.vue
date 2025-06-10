@@ -37,38 +37,42 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { reactive } from 'vue'
+import { authStore } from '@/store/auth'
 
-export default {
-  name: 'ChangePassword',
-  emits: ['change-password'],
-  setup(props, { emit }) {
-    const passwordData = reactive({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    })
+const passwordData = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
 
-    const changePassword = () => {
-      if (passwordData.newPassword !== passwordData.confirmPassword) {
-        alert('New passwords do not match!')
-        return
-      }
-      
-      emit('change-password', passwordData)
-      
-      // Reset form
-      passwordData.currentPassword = ''
-      passwordData.newPassword = ''
-      passwordData.confirmPassword = ''
-    }
-
-    return {
-      passwordData,
-      changePassword
-    }
+const changePassword = () => {
+  if (passwordData.newPassword !== passwordData.confirmPassword) {
+    alert('New passwords do not match!')
+    return
   }
+
+  if (!authStore.validatePassword(passwordData.newPassword)) {
+    alert('New password must be at least 8 characters long and include uppercase, lowercase, and a number.')
+    return
+  }
+
+  const success = authStore.changePassword({
+    currentPassword: passwordData.currentPassword,
+    newPassword: passwordData.newPassword
+  })
+
+  if (success) {
+    alert('Password changed successfully!')
+  } else {
+    alert('Failed to change password. Check your current password.')
+  }
+
+  // Reset form
+  passwordData.currentPassword = ''
+  passwordData.newPassword = ''
+  passwordData.confirmPassword = ''
 }
 </script>
 
