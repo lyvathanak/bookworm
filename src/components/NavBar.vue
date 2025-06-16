@@ -1,21 +1,18 @@
 <template>
   <header class="header">
     <div class="container">
-      <!-- Logo -->
       <div class="logo">
         <a href="/home">
           <img src="../assets/blueLogo.png" alt="Bookworm Logo" class="logo-image" />
         </a>
       </div>
       
-      <!-- Navigation -->
       <nav class="navigation">
         <ul class="nav-links">
           <li class="nav-item dropdown-container" 
               @mouseenter="showAllBooksDropdown = true" 
               @mouseleave="hideAllBooksDropdown">
             <a href="/home" class="nav-link active" @click.prevent="toggleAllBooksDropdown">All Books</a>
-            <!-- All Books Dropdown -->
             <div class="nav-dropdown" 
                  v-show="showAllBooksDropdown"
                  @mouseenter="keepAllBooksDropdown"
@@ -69,9 +66,7 @@
           <li class="nav-item dropdown-container" 
               @mouseenter="showContactDropdown = true" 
               @mouseleave="hideContactDropdown">
-
             <a href="/contact" class="nav-link" @click.prevent="toggleContactDropdown">Contact Us</a>
-            <!-- Contact Dropdown -->
             <div class="nav-dropdown contact-dropdown" 
                  v-show="showContactDropdown"
                  @mouseenter="keepContactDropdown"
@@ -89,7 +84,6 @@
         </ul>
       </nav>
       
-      <!-- Search Bar -->
       <div class="search-container">
         <form @submit.prevent="handleSearch" class="search-form">
           <input 
@@ -97,14 +91,13 @@
             v-model="searchQuery" 
             placeholder="Search by title or author" 
             class="search-input"
-          />
+            @input="updateSearch" />
           <button type="submit" class="search-button">
             <i class="fas fa-search"></i>
           </button>
         </form>
       </div>
       
-      <!-- User Actions - Updated with dropdown -->
       <div class="user-actions">
         <a href="/wishlist" class="action-icon">
           <i class="fas fa-heart"></i>
@@ -112,22 +105,11 @@
         <a href="/cart" class="action-icon">
           <i class="fas fa-shopping-cart"></i>
         </a>
-        
-        <!-- User icon with dropdown -->
-        <div class="user-dropdown">
-          <span class="action-icon" @click="toggleUserDropdown">
-            <i class="fas fa-user"></i>
-          </span>
-          <div class="dropdown-menu" v-show="showUserDropdown">
-            <router-link to="/auth/signin" class="dropdown-item">Sign In</router-link>
-            <router-link to="/auth/signup" class="dropdown-item">Sign Up</router-link>
-            <a href="#" @click.prevent="logout" class="dropdown-item logout">Log Out</a>
-          </div>
-        </div>
+        <a :href="profileLink" class="action-icon">
+          <i class="fas fa-user"></i>
+        </a>
       </div>
 
-
-      <!-- Mobile Menu Toggle -->
       <div class="mobile-menu-toggle" @click="toggleMenu">
         <div class="toggle-icon"></div>
         <div class="toggle-icon"></div>
@@ -149,7 +131,7 @@
               v-model="searchQuery" 
               placeholder="Search by title or author" 
               class="mobile-search-input"
-            />
+              @input="updateSearch" />
             <button type="submit" class="mobile-search-button">
               <i class="fas fa-search"></i>
             </button>
@@ -166,161 +148,83 @@
           </a>
         </li>
         <li class="mobile-nav-item mobile-actions">
-          <div class="mobile-user-dropdown">
-            <span class="mobile-action-icon" @click="toggleMobileUserDropdown">
-              <i class="fas fa-user"></i> Account
-            </span>
-            <div class="mobile-dropdown-menu" v-show="showMobileUserDropdown">
-              <router-link to="/auth/signin" class="dropdown-item">Sign In</router-link>
-              <router-link to="/auth/signup" class="dropdown-item">Sign Up</router-link>
-              <a href="#" @click.prevent="logout" class="dropdown-item logout">Log Out</a>
-            </div>
-          </div>
+          <a :href="profileLink" class="mobile-action-icon">
+            <i class="fas fa-user"></i> Account
+          </a>
         </li>
       </ul>
     </nav>
   </header>
 </template>
 
-<script>
-import { ref, onMounted, onUnmounted } from 'vue'
+<script setup>
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { authStore } from '@/store/auth'
 
-export default {
-  setup() {
-    const router = useRouter()
+const router = useRouter()
 
-    const searchQuery = ref('')
-    const isMenuOpen = ref(false)
-    const isLoggedIn = ref(false) // Set this based on your authentication state
-    const showUserDropdown = ref(false)
-    const showMobileUserDropdown = ref(false)
-    const showAllBooksDropdown = ref(false)
-    const showContactDropdown = ref(false)
+const searchQuery = ref('')
+const isMenuOpen = ref(false)
+const showAllBooksDropdown = ref(false)
+const showContactDropdown = ref(false)
 
-    const handleSearch = () => {
-      console.log('Searching for:', searchQuery.value)
-    }
-
-    const toggleMenu = () => {
-      isMenuOpen.value = !isMenuOpen.value
-    }
-
-    // Toggle dropdown functions
-    const toggleAllBooksDropdown = () => {
-      showAllBooksDropdown.value = !showAllBooksDropdown.value
-      showContactDropdown.value = false // Close other dropdown
-    }
-
-    const toggleContactDropdown = () => {
-      showContactDropdown.value = !showContactDropdown.value
-      showAllBooksDropdown.value = false // Close other dropdown
-    }
-
-    // Toggle user dropdown
-    const toggleUserDropdown = () => {
-      showUserDropdown.value = !showUserDropdown.value
-    }
-
-    // Toggle mobile user dropdown
-    const toggleMobileUserDropdown = () => {
-      showMobileUserDropdown.value = !showMobileUserDropdown.value
-    }
-
-    // Close dropdown when clicked outside
-    const closeUserDropdown = (event) => {
-      if (!event.target.closest('.user-dropdown')) {
-        showUserDropdown.value = false
-      }
-    }
-
-    onMounted(() => {
-      document.addEventListener('click', closeUserDropdown)
-    })
-
-    onUnmounted(() => {
-      document.removeEventListener('click', closeUserDropdown)
-    })
-
-
-    // Logout function
-    const logout = () => {
-      // Clear user data from localStorage
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-      localStorage.removeItem('wishlist')
-      localStorage.removeItem('cartItems')
-      
-      // Update login state
-      isLoggedIn.value = false
-      
-      // Close dropdowns
-      showUserDropdown.value = false
-      showMobileUserDropdown.value = false
-      
-      // Show confirmation
-      alert('You have been logged out successfully')
-      
-      // Redirect to home
-      router.push('/')
-    }
-
-    // Add delay for better UX when moving mouse between nav item and dropdown
-    let allBooksTimeout = null
-    let contactTimeout = null
-
-    const hideAllBooksDropdown = () => {
-      allBooksTimeout = setTimeout(() => {
-        showAllBooksDropdown.value = false
-      }, 100) // Small delay to allow mouse movement
-    }
-
-    const hideContactDropdown = () => {
-      contactTimeout = setTimeout(() => {
-        showContactDropdown.value = false
-      }, 100) // Small delay to allow mouse movement
-    }
-
-    // Clear timeouts when mouse enters dropdown area
-    const keepAllBooksDropdown = () => {
-      if (allBooksTimeout) {
-        clearTimeout(allBooksTimeout)
-        allBooksTimeout = null
-      }
-      showAllBooksDropdown.value = true
-    }
-
-    const keepContactDropdown = () => {
-      if (contactTimeout) {
-        clearTimeout(contactTimeout)
-        contactTimeout = null
-      }
-      showContactDropdown.value = true
-    }
-
-    return {
-      searchQuery,
-      isMenuOpen,
-      isLoggedIn,
-      showUserDropdown,
-      showMobileUserDropdown,
-      showAllBooksDropdown,
-      showContactDropdown,
-      handleSearch,
-      toggleMenu,
-      toggleAllBooksDropdown,
-      toggleContactDropdown,
-      toggleUserDropdown,
-      toggleMobileUserDropdown,
-      logout,
-      closeUserDropdown,
-      hideAllBooksDropdown,
-      hideContactDropdown,
-      keepAllBooksDropdown,
-      keepContactDropdown
-    }
-  }
+const updateSearch = () => {
+  router.push({ path: '/home', query: { search: searchQuery.value.trim() || undefined } })
 }
+
+const handleSearch = () => {
+  updateSearch()
+}
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
+}
+
+const toggleAllBooksDropdown = () => {
+  showAllBooksDropdown.value = !showAllBooksDropdown.value
+  showContactDropdown.value = false
+}
+
+const toggleContactDropdown = () => {
+  showContactDropdown.value = !showContactDropdown.value
+  showAllBooksDropdown.value = false
+}
+
+let allBooksTimeout = null
+let contactTimeout = null
+
+const hideAllBooksDropdown = () => {
+  allBooksTimeout = setTimeout(() => {
+    showAllBooksDropdown.value = false
+  }, 100)
+}
+
+const hideContactDropdown = () => {
+  contactTimeout = setTimeout(() => {
+    showContactDropdown.value = false
+  }, 100)
+}
+
+const keepAllBooksDropdown = () => {
+  if (allBooksTimeout) {
+    clearTimeout(allBooksTimeout)
+    allBooksTimeout = null
+  }
+  showAllBooksDropdown.value = true
+}
+
+const keepContactDropdown = () => {
+  if (contactTimeout) {
+    clearTimeout(contactTimeout)
+    contactTimeout = null
+  }
+  showContactDropdown.value = true
+}
+
+const profileLink = computed(() => {
+  return authStore.isAuthenticated ? '/profile' : '/auth/signin'
+})
 </script>
 
 <style scoped>

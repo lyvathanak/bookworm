@@ -1,71 +1,101 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import LandingPage from '../views/LandingPage.vue'
-import HomeView from '../views/HomeView.vue'
-import DescriptionPage from '../views/DescriptionPage.vue'
-import WishListPage from '@/views/WishListPage.vue'
-import CheckoutPageVue from '@/views/CheckoutPage.vue'
-import CartPageVue from '@/views/CartPage.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import LandingPage from '../views/LandingPage.vue';
+import HomeView from '../views/HomeView.vue';
+import DescriptionPage from '../views/DescriptionPage.vue';
+import WishListPage from '@/views/WishListPage.vue';
+import CheckoutPageVue from '@/views/CheckoutPage.vue';
+import CartPageVue from '@/views/CartPage.vue';
+import AuthorProfile from '@/views/AuthorProfile.vue';
+import BookList from '@/views/BookList.vue';
+import AuthPage from '@/views/AuthPage.vue';
+import { authStore } from '@/store/auth'; // Import the auth store
 
-// import Signup from '../components/SignUp.vue';
-// import Signin from '../components/SignIn.vue';
-
-import AuthPage from '@/views/AuthPage.vue'
 const routes = [
   {
     path: '/',
     name: 'landing',
-    component: LandingPage
+    component: LandingPage,
   },
   {
     path: '/home',
     name: 'home',
-    component: HomeView
+    component: HomeView,
   },
   {
     path: '/wishlist',
     name: 'wishlist',
-    component: WishListPage
+    component: WishListPage,
   },
   {
     path: '/book/:id',
     name: 'book-description',
-    component: DescriptionPage
+    component: DescriptionPage,
   },
   {
-    path: '/Checkout',
+    path: '/checkout',
     name: 'checkout',
-    component: CheckoutPageVue
+    component: CheckoutPageVue,
+    meta: { requiresAuth: true } // Requires authentication
   },
   {
-    path: '/Cart',
+    path: '/cart',
     name: 'cart',
-    component: CartPageVue
+    component: CartPageVue,
+  },
+  {
+    path: '/author/:authorName',
+    name: 'author-profile',
+    component: AuthorProfile,
+  },
+  {
+    path: '/author/:authorName/books',
+    name: 'book-list',
+    component: BookList,
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('../views/ProfileView.vue'),
+    meta: { requiresAuth: true } // Requires authentication
   },
   {
     path: '/auth',
+    name: 'auth',
     component: AuthPage,
     children: [
       {
+        path: '',
+        redirect: '/auth/signin', // Redirect /auth to /auth/signin
+      },
+      {
         path: 'signin',
         name: 'signin',
-        component: () => import('../components/SignIn.vue')
+        component: () => import('../components/SignIn.vue'),
       },
       {
         path: 'signup',
         name: 'signup',
-        component: () => import('../components/SignUp.vue')
+        component: () => import('../components/SignUp.vue'),
       },
-      {
-        path: '',
-        redirect: '/home'
-      }
-    ]
-  }
-]
+    ],
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-export default router
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = authStore.isAuthenticated;
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    // If the route requires authentication and user is not authenticated
+    const redirectTo = to.fullPath; // Store the intended destination
+    next(`/auth/signin?redirect=${encodeURIComponent(redirectTo)}`);
+  } else {
+    next(); // Proceed to the route
+  }
+});
+
+export default router;

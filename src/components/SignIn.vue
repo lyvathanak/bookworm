@@ -10,10 +10,6 @@
 
     <div class="logo-section">
       <img src="../assets/bookworm.png" alt="Bookworm Logo" class="logo" />
-      <!-- <h1 class="title">
-        BOOK <span class="highlight">WORM</span><br />
-        <small>ONLINE BOOKSTORE</small>
-      </h1> -->
     </div>
 
     <form @submit.prevent="handleSignin" class="auth-form">
@@ -27,7 +23,9 @@
         <router-link to="/forgot-password" class="forgot-password">Forgot password?</router-link>
       </div>
 
-      <button type="submit" class="btn-primary">Sign in</button>
+      <button type="submit" class="btn-primary" :disabled="isLoading">
+        {{ isLoading ? 'Signing In...' : 'Sign in' }}
+      </button>
     </form>
 
     <div class="divider"><span>OR</span></div>
@@ -39,71 +37,122 @@
     </div>
 
     <p class="switch-auth">
-      Don’t have an Account? <router-link to="/auth/signup">Sign Up</router-link>
+      Don't have an Account? <router-link to="/auth/signup">Sign Up</router-link>
     </p>
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      email: '',
-      password: '',
-      rememberMe: false,
-    };
-  },
-  methods: {
-    handleSignin() {
-      // Add your signin API call here
-      console.log('Signin data:', this.email, this.password, this.rememberMe);
-      alert('Sign-in successful!');
-      // On successful login, redirect to home page
-      this.$router.push('/home');
-    },
-    socialLogin(provider) {
-      alert(`Social login with ${provider} clicked`);
-      // Implement OAuth social login if needed
-    },
-  },
-};
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { authStore } from '@/store/auth'
+
+const router = useRouter()
+const route = useRoute()
+const isLoading = ref(false)
+
+const email = ref('')
+const password = ref('')
+const rememberMe = ref(false)
+
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return re.test(email)
+}
+
+const validatePassword = (password) => {
+  const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+  return re.test(password)
+}
+
+onMounted(() => {
+  authStore.loadFromStorage() // Ensure data is loaded on mount
+})
+
+const handleSignin = async () => {
+  if (!email.value || !password.value) {
+    alert('Please enter email and password.')
+    return
+  }
+
+  if (!validateEmail(email.value)) {
+    alert('Please enter a valid email address.')
+    return
+  }
+
+  if (!validatePassword(password.value)) {
+    alert('Password must be at least 8 characters long and include uppercase, lowercase, and a number.')
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const response = await simulateSignIn({
+      email: email.value,
+      password: password.value
+    })
+    
+    console.log('Signin response:', response)
+    if (response.success) {
+      authStore.initUser(response.user)
+      authStore.saveToStorage()
+      alert('Sign in successful!')
+      const redirectTo = route.query.redirect || '/home'
+      router.push(redirectTo)
+    } else {
+      alert('Invalid credentials')
+    }
+  } catch (error) {
+    console.error('Sign in error:', error)
+    alert('Sign in failed. Please try again.')
+  } finally {
+    isLoading.value = false
+    console.log('Auth state after signin:', authStore.isAuthenticated, authStore.user)
+  }
+}
+
+const simulateSignIn = async (credentials) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        const user = JSON.parse(storedUser)
+        console.log('Attempted login - Email:', credentials.email, 'Password:', credentials.password)
+        console.log('Stored user:', user)
+        if (user.email === credentials.email && user.password === credentials.password) {
+          resolve({
+            success: true,
+            user: user
+          })
+        } else {
+          resolve({
+            success: false,
+            user: null
+          })
+        }
+      } else {
+        resolve({
+          success: false,
+          user: null
+        })
+      }
+    }, 1000)
+  })
+}
+
+const socialLogin = (provider) => {
+  alert(`Social login with ${provider} clicked`)
+}
 </script>
 
 <style scoped>
-.signIn-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.breadcrumb {
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-.breadcrumb-link {
-  text-decoration: none;
-}
-
-.home {
-  color: #e6d430;
-}
-
-.breadcrumb-separator {
-  margin: 0 5px;
-  color: #666;
-}
-
-.breadcrumb-current {
-  color: #666;
-}
 .auth-container {
   max-width: 512px;
   margin: auto;
-  height: 100vh; /* full viewport height */
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* vertical center */
+  justify-content: center;
   align-items: center;
   font-family: 'Poppins', sans-serif;
   padding: 0 1rem;
@@ -116,12 +165,11 @@ export default {
   border: none;
   background: none;
   cursor: pointer;
-  margin-bottom: rem;
+  margin-bottom: 1rem;
   user-select: none;
   padding-left: 0;
   padding-top: 0;
   padding-bottom: 0;
-  
 }
 
 .logo-section {
@@ -139,25 +187,6 @@ export default {
   margin-bottom: 0.5rem;
 }
 
-.title {
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: #0a1e3f; /* dark blue */
-  line-height: 1.2;
-}
-
-.highlight {
-  color: #f8b500; /* yellow */
-}
-
-.title small {
-  font-weight: 400;
-  font-size: 0.8rem;
-  color: #0a1e3f;
-  margin-top: 0.1rem;
-  display: block;
-}
-
 .auth-form {
   width: 100%;
 }
@@ -172,15 +201,6 @@ export default {
   box-sizing: border-box;
 }
 
-.auth-form input[type="date"] {
-  /* Make date input placeholder style consistent */
-  color: #999;
-}
-
-.auth-form input[type="date"]:focus {
-  color: #000;
-}
-
 .btn-primary {
   background-color: #0a1e3f;
   color: white;
@@ -191,6 +211,16 @@ export default {
   cursor: pointer;
   width: 100%;
   font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #083a6b;
+}
+
+.btn-primary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 .options-row {
@@ -200,8 +230,6 @@ export default {
   font-size: 0.8rem;
   color: #555;
   align-items: center;
-  
-
 }
 
 .options-row label {
@@ -210,10 +238,12 @@ export default {
   gap: 8px;
   white-space: nowrap;
 }
+
 .options-row input[type="checkbox"]{
-    margin: 0;
-    vertical-align: middle;
+  margin: 0;
+  vertical-align: middle;
 }
+
 .forgot-password {
   color: #0a1e3f;
   text-decoration: none;
@@ -263,5 +293,4 @@ export default {
   color: #0a1e3f;
   text-decoration: none;
 }
-
 </style>

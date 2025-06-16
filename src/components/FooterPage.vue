@@ -43,7 +43,8 @@
             <ul class="footer-list">
               <li><a href="/" class="footer-link">Home</a></li>
               <li><a href="/books" class="footer-link">All Books</a></li>
-              <li><a href="/profile" class="footer-link">Profile</a></li>
+              <!-- Conditional link for the Profile page -->
+              <li><a :href="profileLink" class="footer-link">Profile</a></li>
               <li><a href="/about" class="footer-link">About Us</a></li>
             </ul>
           </div>
@@ -92,8 +93,9 @@
   </template>
   
   <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { defineOptions } from 'vue'
+import { authStore } from '@/store/auth' // Assuming authStore is correctly implemented and accessible
 
 // Define a multi-word component name
 defineOptions({
@@ -107,6 +109,11 @@ const handleSubscribe = () => {
   // Implement your subscription functionality here
   email.value = '' // Clear the input after submission
 }
+
+// Computed property to determine the profile link based on authentication status
+const profileLink = computed(() => {
+  return authStore.isAuthenticated ? '/profile' : '/auth/signin';
+});
 </script>
   
   <style scoped>
