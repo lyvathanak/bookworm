@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiClient = axios.create({ baseURL: 'http://localhost:3000', headers: { 'Content-Type': 'application/json' } });
+const apiClient = axios.create({ baseURL: 'http://localhost:5000', headers: { 'Content-Type': 'application/json' } });
 
 apiClient.interceptors.request.use((config) => {
     const token = localStorage.getItem('authToken');
@@ -30,7 +30,12 @@ const api = {
   updateOrderStatus: (id, status) => apiClient.patch(`/admin/orders/${id}/status`, { status }),
   createOrder: (data) => apiClient.post('/admin/orders', data),
   getUsers: () => apiClient.get('/users'),
-  updateUser: (id, data) => apiClient.patch(`/users/${id}`, data),
+  updateUser(id, data) {
+  return apiClient.patch(`/users/${id}`, data);
+  },
+  createUser(userData) {
+  return apiClient.post('/users', userData);
+  },
   getRatings: () => apiClient.get('/ratings'),
   deleteRating: (id) => apiClient.delete(`/ratings/${id}`),
   getDashboardStats: () => Promise.all([api.getOrders(), api.getUsers(), api.getBooks()]),
