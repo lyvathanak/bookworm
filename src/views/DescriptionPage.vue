@@ -613,7 +613,7 @@ const addToCart = () => {
   if (!book.value) return
   
   // Get existing cart from localStorage
-  let cartItems = JSON.parse(localStorage.getItem('bookworm-cart') || '[]')
+  let cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]')
   
   // Check if item is already in cart
   const existingItem = cartItems.find(item => item.id === book.value.id)
@@ -626,14 +626,16 @@ const addToCart = () => {
       title: book.value.title,
       author: book.value.author,
       price: book.value.price,
-      image: book.value.coverImage,
-      isbn: `ISBN${book.value.id}${Math.floor(Math.random() * 1000000)}`,
+      coverImage: book.value.coverImage,  // Using coverImage instead of image
       quantity: quantity.value
     })
   }
   
   // Save to localStorage
-  localStorage.setItem('bookworm-cart', JSON.stringify(cartItems))
+  localStorage.setItem('cartItems', JSON.stringify(cartItems))
+  
+  // Dispatch cart-updated event
+  window.dispatchEvent(new CustomEvent('cart-updated'))
   
   // Show success message
   showSuccessMessage.value = true

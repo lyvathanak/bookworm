@@ -16,10 +16,30 @@
       <div class="address-form" v-if="deliveryOption === 'address'">
         <div class="form-group">
           <label>*Location</label>
-          <select v-model="selectedLocation">
+          <select v-model="selectedLocation" v-if="selectedLocation !== 'other'">
             <option disabled value="">Select address</option>
             <option value="phnom_penh">Phnom Penh, Cambodia</option>
+            <option value="siem_reap">Siem Reap, Cambodia</option>
+            <option value="battambang">Battambang, Cambodia</option> 
+            <option value="kampot">Kampot, Cambodia</option>
+            <option value="sihanoukville">Sihanoukville, Cambodia</option>
+            <option value="kep">Kep, Cambodia</option>
+            <option value="kompong_cham">Kompong Cham, Cambodia</option>
+            <option value="kompong_thom">Kompong Thom, Cambodia</option>
+            <option value="preah_sihanouk">Preah Sihanouk, Cambodia</option>
+            <option value="other">Other</option> 
           </select>
+          <div v-if="selectedLocation === 'other'" class="custom-location-container">
+            <input 
+              type="text" 
+              v-model="customLocation" 
+              placeholder="Enter your location"
+              class="custom-location-input"
+            />
+            <button class="back-to-select-btn" @click="selectedLocation = ''">
+              Back to list
+            </button>
+          </div>
         </div>
         <div class="form-group">
           <label>*Detail</label>
@@ -109,6 +129,7 @@ import { authStore } from '@/store/auth'
 const router = useRouter()
 const deliveryOption = ref('address')
 const selectedLocation = ref('')
+const customLocation = ref('')
 const addressDetail = ref('')
 const paymentMethod = ref('cod')
 const cartItems = ref([])
@@ -155,9 +176,18 @@ const processCheckout = async () => {
     return
   }
 
-  if (deliveryOption.value === 'address' && (!selectedLocation.value || !addressDetail.value)) {
-    alert('Please provide location and address details.')
-    return
+  if (deliveryOption.value === 'address') {
+    if (selectedLocation.value === 'other' && !customLocation.value) {
+      alert('Please enter your location.')
+      return
+    } else if (selectedLocation.value !== 'other' && !selectedLocation.value) {
+      alert('Please select a location.')
+      return
+    }
+    if (!addressDetail.value) {
+      alert('Please provide address details.')
+      return
+    }
   }
 
   if (!paymentMethod.value) {
@@ -415,14 +445,34 @@ h2 {
   background-color: #d6c420;
 }
 
-.checkout-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
 input[type="radio"],
 input[type="checkbox"] {
   margin-right: 8px;
+}
+
+.custom-location-container {
+  display: flex;
+  gap: 10px;
+}
+
+.custom-location-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.back-to-select-btn {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0 12px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.back-to-select-btn:hover {
+  background-color: #e0e0e0;
 }
 
 @media (max-width: 768px) {
