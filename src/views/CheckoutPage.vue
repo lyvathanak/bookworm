@@ -1,6 +1,6 @@
 <template>
   <div class="checkout-container">
-    <h1>Check out</h1>
+    <h1>Checkout</h1>
 
     <div class="delivery-section">
       <h2>Choose your delivery option</h2>

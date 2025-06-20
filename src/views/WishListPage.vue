@@ -65,8 +65,13 @@ const cartItems = ref([])
 // Load wishlist items from localStorage
 const loadWishlist = () => {
   try {
-    const savedWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
-    wishlistItems.value = savedWishlist
+    // Change the key to 'bookworm-wishlist' to match what's used in DescriptionPage.vue
+    const savedWishlist = JSON.parse(localStorage.getItem('bookworm-wishlist') || '[]')
+    wishlistItems.value = savedWishlist.map(item => ({
+      ...item,
+      coverImage: item.image || item.coverImage, // Support both image property names
+      author: item.author || 'Unknown Author' // Ensure author property exists
+    }))
   } catch (error) {
     console.error('Error loading wishlist:', error)
     wishlistItems.value = []
