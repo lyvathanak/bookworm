@@ -1,9 +1,9 @@
 <template>
-  <div class="book-description-page">
+  <div class="book-description-page" v-if="book">
     <div class="breadcrumb">
-      <a href="/home" class="breadcrumb-link home">Home</a>
+      <router-link to="/home" class="breadcrumb-link home">Home</router-link>
       <span class="breadcrumb-separator">/</span>
-      <a href="/home" class="breadcrumb-link">Books</a>
+      <router-link to="/home" class="breadcrumb-link">Books</router-link>
       <span class="breadcrumb-separator">/</span>
       <span class="breadcrumb-current">{{ book.title }}</span>
     </div>
@@ -17,7 +17,7 @@
               v-for="i in 5" 
               :key="i" 
               :class="getStarClass(i, book.rating)"
-            ></span>
+            >★</span>
           </div>
           <span class="reviews-count">{{ book.reviewsCount }} Reviews</span>
         </div>
@@ -52,7 +52,7 @@
             :class="{ active: inWishlist }" 
             @click="toggleWishlist"
           >
-            <span class="heart-icon">♡</span>
+            <span class="heart-icon">{{ inWishlist ? '♥' : '♡' }}</span>
           </button>
         </div>
         
@@ -72,14 +72,14 @@
         :to="{ name: 'book-description', params: { id: book.id > 1 ? book.id - 1 : books.length }}" 
         class="book-nav-button prev"
       >
-        ← Previous Book
+        &larr; Previous Book
       </RouterLink>
       
       <RouterLink 
         :to="{ name: 'book-description', params: { id: book.id < books.length ? book.id + 1 : 1 }}" 
         class="book-nav-button next"
       >
-        Next Book →
+        Next Book &rarr;
       </RouterLink>
     </div>
     
@@ -93,12 +93,7 @@
         </div>
         <div class="details-row">
           <div class="details-label">Author</div>
-          <router-link
-            :to="{ name: 'author-profile', params: { authorName: formatAuthorName(book.author) } }"
-            class="author-link"
-          >
-            <div class="details-value">{{ book.author }}</div>
-          </router-link>
+          <div class="details-value">{{ book.author }}</div>
         </div>
         <div class="details-row">
           <div class="details-label">ISBN</div>
@@ -178,7 +173,7 @@
     <div class="related-books-section">
       <h2 class="section-title">Related books</h2>
       <div class="related-books-grid">
-        <div class="related-book" v-for="relatedBook in relatedBooks" :key="relatedBook.id">
+        <div class="related-book" v-for="relatedBook in relatedBooks" :key="relatedBook.id" @click="navigateToBook(relatedBook.id)">
           <div class="related-book-cover">
             <img :src="relatedBook.coverImage" :alt="relatedBook.title" class="related-book-image" />
           </div>
@@ -197,7 +192,7 @@
       <h2 class="section-title">Best selling</h2>
       <div class="best-selling-container">
         <div class="best-selling-books">
-          <div class="best-selling-book" v-for="bestSellingBook in bestSellingBooks" :key="bestSellingBook.id">
+          <div class="best-selling-book" v-for="bestSellingBook in bestSellingBooks" :key="bestSellingBook.id" @click="navigateToBook(bestSellingBook.id)">
             <div class="best-selling-book-cover">
               <img :src="bestSellingBook.coverImage" :alt="bestSellingBook.title" class="book-cover-image" />
             </div>
@@ -210,13 +205,27 @@
         </div>
       </div>
     </div>
+
+    <!-- Success Message Popup -->
+    <div v-if="showSuccessMessage" class="success-message">
+      <div class="success-content">
+        <h3>✓ Added to Cart!</h3>
+        <p>{{ book.title }} ({{ quantity }}) has been added to your cart.</p>
+        <button @click="showSuccessMessage = false" class="close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading state -->
+  <div v-else class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading book details...</p>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { RouterLink } from 'vue-router'
+import { ref, watch, onMounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import book1Image from '@/assets/book1.png'
 import book2Image from '@/assets/book2.png'
 import book3Image from '@/assets/book3.png'
@@ -225,6 +234,9 @@ import book5Image from '@/assets/book5.png'
 import book6Image from '@/assets/book6.png'
 import book7Image from '@/assets/book7.png'
 import book8Image from '@/assets/book8.png'
+
+const route = useRoute()
+const router = useRouter()
 
 // Sample books data - in a real app, this might come from an API
 const books = [
@@ -397,88 +409,88 @@ const books = [
   }
 ]
 
-// Additional data for related books and bestsellers
+// Additional data for related books and bestsellers - map to actual book IDs
 const relatedBooks = [
   {
-    id: 101,
-    title: "Young Mungo",
-    author: "Douglas Stuart",
+    id: 3,
+    title: "The Silent Patient",
+    author: "Alex Michaelides",
     rating: 4.5,
-    price: "$16.99",
-    coverImage: book3Image
-  },
-  {
-    id: 102,
-    title: "A Flicker In The Dark",
-    author: "Stacy Willingham",
-    rating: 4.7,
-    price: "$20.90",
-    coverImage: book4Image
-  },
-  {
-    id: 103,
-    title: "Reminders of Him",
-    author: "Colleen Hoover",
-    rating: 4.3,
-    price: "$19.90",
-    coverImage: book5Image
-  },
-  {
-    id: 104,
-    title: "The Christmas Killer",
-    author: "Alex Pine",
-    rating: 3.9,
-    price: "$15.99",
-    coverImage: book2Image
-  },
-  {
-    id: 105,
-    title: "The Last Thing He Told Me",
-    author: "Laura Dave",
-    rating: 4.2,
-    price: "$13.99",
+    price: "$12.99",
     coverImage: book1Image
   },
   {
-    id: 106,
-    title: "The Ink Black Heart",
-    author: "Robert Galbraith",
+    id: 6,
+    title: "Becoming",
+    author: "Michelle Obama",
+    rating: 4.9,
+    price: "$18.99",
+    coverImage: book4Image
+  },
+  {
+    id: 7,
+    title: "The Midnight Library",
+    author: "Matt Haig",
+    rating: 4.3,
+    price: "$16.75",
+    coverImage: book5Image
+  },
+  {
+    id: 4,
+    title: "Where the Crawdads Sing",
+    author: "Delia Owens",
+    rating: 4.8,
+    price: "$15.49",
+    coverImage: book2Image
+  },
+  {
+    id: 5,
+    title: "Educated",
+    author: "Tara Westover",
     rating: 4.6,
-    price: "$22.99",
+    price: "$13.99",
+    coverImage: book3Image
+  },
+  {
+    id: 8,
+    title: "Project Hail Mary",
+    author: "Andy Weir",
+    rating: 4.7,
+    price: "$17.99",
     coverImage: book8Image
   }
 ]
 
 const bestSellingBooks = [
   {
-    id: 201,
+    id: 1,
     title: "The Subtle Art of Not Giving a F*ck",
     author: "Mark Manson",
-    rating: 4.3,
+    rating: 4.0,
     price: "$11.63",
     category: "Self-help",
     coverImage: book6Image
   },
   {
-    id: 202,
-    title: "Such a Fun Age",
-    author: "Kiley Reid",
+    id: 4,
+    title: "Where the Crawdads Sing",
+    author: "Delia Owens",
     rating: 4.8,
-    price: "$14.99",
-    category: "Biography",
+    price: "$15.49",
+    category: "Fiction",
     coverImage: book2Image
   },
   {
-    id: 203,
+    id: 3,
     title: "The Silent Patient",
     author: "Alex Michaelides",
     rating: 4.5,
     price: "$12.99",
-    category: "Fiction",
+    category: "Thriller",
     coverImage: book1Image
   },
   {
-    id: 204,
+    id: 6,
     title: "Becoming",
     author: "Michelle Obama",
     rating: 4.9,
@@ -487,7 +499,7 @@ const bestSellingBooks = [
     coverImage: book4Image
   },
   {
-    id: 205,
+    id: 2,
     title: "Atomic Habits",
     author: "James Clear",
     rating: 4.7,
@@ -496,7 +508,7 @@ const bestSellingBooks = [
     coverImage: book7Image
   },
   {
-    id: 206,
+    id: 8,
     title: "Project Hail Mary",
     author: "Andy Weir",
     rating: 4.7,
@@ -505,7 +517,7 @@ const bestSellingBooks = [
     coverImage: book8Image
   },
   {
-    id: 207,
+    id: 7,
     title: "The Midnight Library",
     author: "Matt Haig",
     rating: 4.3,
@@ -514,7 +526,7 @@ const bestSellingBooks = [
     coverImage: book5Image
   },
   {
-    id: 208,
+    id: 5,
     title: "Educated",
     author: "Tara Westover",
     rating: 4.6,
@@ -524,26 +536,67 @@ const bestSellingBooks = [
   }
 ]
 
-const route = useRoute()
-
-const currentBookId = computed(() => Number(route.params.id) || 1)
-const book = computed(() => books.find(b => b.id === currentBookId.value) || books[0])
-
-// New reactive variables
+// Reactive variables
 const quantity = ref(1)
 const inWishlist = ref(false)
-const cartItems = ref([])
 const showAddedToCart = ref(false)
+const showSuccessMessage = ref(false)
+
+// Initialize book with the first book to prevent null errors
+const book = ref(null)
+
+// Function to scroll to top of page
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
+const fetchBookDetails = () => {
+  const bookId = Number(route.params.id) || 1;
+  const foundBook = books.find(b => b.id === bookId)
+  book.value = foundBook || books[0];
+};
+
+// Check if book is in wishlist
+const checkWishlistStatus = () => {
+  if (book.value) {
+    const wishlist = JSON.parse(localStorage.getItem('bookworm-wishlist') || '[]')
+    inWishlist.value = wishlist.some(item => item.id === book.value.id)
+  }
+}
+
+onMounted(() => {
+  fetchBookDetails();
+  checkWishlistStatus();
+});
+
+watch(() => route.params.id, async () => {
+  fetchBookDetails();
+  checkWishlistStatus();
+  quantity.value = 1; // Reset quantity when changing books
+  
+  // Wait for the next DOM update cycle, then scroll to top
+  await nextTick()
+  scrollToTop()
+});
 
 // Star rating function
 const getStarClass = (position, rating) => {
   if (rating >= position) {
-    return 'fas fa-star filled'
+    return 'star filled'
   } else if (rating >= position - 0.5) {
-    return 'fas fa-star-half-alt filled'
+    return 'star half-filled'
   } else {
-    return 'far fa-star'
+    return 'star'
   }
+}
+
+// Navigation function for related books and bestsellers
+const navigateToBook = async (bookId) => {
+  await router.push({ name: 'book-description', params: { id: bookId } })
+  // The scroll to top will be handled by the route watcher
 }
 
 // Quantity functions
@@ -555,78 +608,51 @@ const decreaseQuantity = () => {
   if (quantity.value > 1) quantity.value--
 }
 
-// Cart functions
-// Add this helper function at the top of your script setup
-const parsePrice = (price) => {
-  if (typeof price === 'number') {
-    return price;
-  }
-  if (typeof price === 'string') {
-    // Remove dollar sign and any other non-numeric characters except decimal point
-    const cleanPrice = price.replace(/[^0-9.]/g, '');
-    const parsed = parseFloat(cleanPrice);
-    return isNaN(parsed) ? 0 : parsed;
-  }
-  return 0;
-};
-
-// Update your addToCart function in DescriptionPage.vue
+// Cart functions - Connect to the cart system
 const addToCart = () => {
-  try {
-    // Load existing cart items
-    const existingCart = JSON.parse(localStorage.getItem('cartItems') || '[]');
-    
-    // Check if item is already in cart
-    const existingItemIndex = existingCart.findIndex(item => item.id === book.value.id);
-    
-    const cartItem = {
+  if (!book.value) return
+  
+  // Get existing cart from localStorage
+  let cartItems = JSON.parse(localStorage.getItem('bookworm-cart') || '[]')
+  
+  // Check if item is already in cart
+  const existingItem = cartItems.find(item => item.id === book.value.id)
+  
+  if (existingItem) {
+    existingItem.quantity += quantity.value
+  } else {
+    cartItems.push({
       id: book.value.id,
       title: book.value.title,
-      author: book.value.author, // Make sure to include author
-      price: parsePrice(book.value.price), // Parse price to number
-      coverImage: book.value.coverImage,
-      format: book.value.format || 'Paperback',
+      author: book.value.author,
+      price: book.value.price,
+      image: book.value.coverImage,
+      isbn: `ISBN${book.value.id}${Math.floor(Math.random() * 1000000)}`,
       quantity: quantity.value
-    };
-    
-    if (existingItemIndex !== -1) {
-      // Item exists, update quantity
-      existingCart[existingItemIndex].quantity += quantity.value;
-    } else {
-      // New item, add to cart
-      existingCart.push(cartItem);
-    }
-    
-    // Save updated cart to localStorage
-    localStorage.setItem('cartItems', JSON.stringify(existingCart));
-    
-    // Update local cartItems ref
-    cartItems.value = existingCart;
-    
-    // Dispatch event to update cart count in navbar
-    window.dispatchEvent(new CustomEvent('cart-updated'));
-    
-    // Show feedback
-    showAddedToCart.value = true;
-    setTimeout(() => {
-      showAddedToCart.value = false;
-    }, 2000);
-    
-    // Reset quantity to 1 after adding to cart
-    quantity.value = 1;
-    
-  } catch (error) {
-    console.error('Error adding item to cart:', error);
-    alert('Failed to add item to cart. Please try again.');
+    })
   }
-};
+  
+  // Save to localStorage
+  localStorage.setItem('bookworm-cart', JSON.stringify(cartItems))
+  
+  // Show success message
+  showSuccessMessage.value = true
+  setTimeout(() => {
+    showSuccessMessage.value = false
+  }, 3000)
+  
+  // Reset quantity
+  quantity.value = 1
+}
 
 // Wishlist functions
 const toggleWishlist = () => {
+  if (!book.value) return
+  
   inWishlist.value = !inWishlist.value
   
   // Get existing wishlist from localStorage
-  let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
+  let wishlist = JSON.parse(localStorage.getItem('bookworm-wishlist') || '[]')
   
   if (inWishlist.value) {
     // Add to wishlist if not already there
@@ -634,8 +660,10 @@ const toggleWishlist = () => {
       wishlist.push({
         id: book.value.id,
         title: book.value.title,
+        author: book.value.author,
         price: book.value.price,
-        coverImage: book.value.coverImage
+        image: book.value.coverImage,
+        rating: book.value.rating
       })
     }
   } else {
@@ -644,28 +672,8 @@ const toggleWishlist = () => {
   }
   
   // Save to localStorage
-  localStorage.setItem('wishlist', JSON.stringify(wishlist))
+  localStorage.setItem('bookworm-wishlist', JSON.stringify(wishlist))
 }
-
-// Check if book is in wishlist on page load
-const checkWishlistStatus = () => {
-  const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
-  inWishlist.value = wishlist.some(item => item.id === book.value.id)
-}
-
-// Load cart items from localStorage on page load
-const loadCartItems = () => {
-  cartItems.value = JSON.parse(localStorage.getItem('cartItems') || '[]')
-}
-
-// Helper function to format author name for the route
-const formatAuthorName = (author) => {
-  return author.toLowerCase().replace(/\s+/g, '-');
-}
-
-// Run initialization functions
-checkWishlistStatus()
-loadCartItems()
 </script>
 
 <style scoped>
@@ -673,6 +681,36 @@ loadCartItems()
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+}
+
+/* Loading state styles */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #e6d430;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #666;
+  font-size: 16px;
 }
 
 /* Breadcrumb Styles */
@@ -704,27 +742,39 @@ loadCartItems()
   flex-wrap: wrap;
   gap: 30px;
   margin-bottom: 40px;
+  
 }
 
 .book-info {
   flex: 1;
   min-width: 300px;
+  
 }
 
 .book-rating {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  
 }
 
 .stars {
   display: flex;
   margin-right: 10px;
+  
 }
 
 .star {
   font-size: 20px;
   color: #ccc;
+}
+
+.star.filled {
+  color: #702ea9;
+}
+
+.star.half-filled {
+  color: #702ea9;
 }
 
 .reviews-count {
@@ -769,6 +819,7 @@ loadCartItems()
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 20px;
 }
 
 .quantity-selector {
@@ -784,6 +835,11 @@ loadCartItems()
   border: none;
   padding: 8px 12px;
   cursor: pointer;
+  font-weight: bold;
+}
+
+.quantity-btn:hover {
+  background: #e0e0e0;
 }
 
 .quantity-input {
@@ -804,6 +860,11 @@ loadCartItems()
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #555;
 }
 
 .cart-icon {
@@ -820,15 +881,37 @@ loadCartItems()
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
 .wishlist-btn.active {
   background-color: #e6d430;
 }
 
+.wishlist-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.wishlist-btn.active:hover {
+  background-color: #d6c420;
+}
+
 .heart-icon {
   font-size: 20px;
   color: #666;
+}
+
+.wishlist-btn.active .heart-icon {
+  color: #fff;
+}
+
+.added-to-cart-feedback {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+  text-align: center;
 }
 
 .book-cover {
@@ -841,19 +924,6 @@ loadCartItems()
   object-fit: cover;
   border-radius: 4px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.book-cover-placeholder {
-  width: 100%;
-  height: 450px;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-style: italic;
-  color: #999;
 }
 
 /* Book Details Styles */
@@ -890,16 +960,6 @@ loadCartItems()
   flex: 1;
   padding: 10px 15px;
   border-bottom: 1px solid #eee;
-}
-
-.author-link {
-  text-decoration: none;
-  color: #666;
-}
-
-.author-link:hover .details-value {
-  color: #333;
-  text-decoration: underline;
 }
 
 .details-row:last-child .details-label,
@@ -983,7 +1043,7 @@ loadCartItems()
   border-radius: 0 4px 4px 0;
 }
 
-/* Related Books Styles - Updated for horizontal scrolling */
+/* Related Books Styles */
 .related-books-section {
   margin-bottom: 40px;
 }
@@ -998,13 +1058,14 @@ loadCartItems()
 }
 
 .related-book {
-  flex: 0 0 220px; /* Fixed width, no shrinking */
+  flex: 0 0 220px;
   display: flex;
   flex-direction: column;
   padding: 10px;
   border: 1px solid #eee;
   border-radius: 4px;
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
 
 .related-book:hover {
@@ -1021,14 +1082,14 @@ loadCartItems()
   margin-bottom: 10px;
 }
 
-/* Best Selling Styles - Horizontally Scrollable */
+/* Best Selling Styles */
 .best-selling-section {
   margin-bottom: 40px;
 }
 
 .best-selling-container {
   overflow-x: auto;
-  padding-bottom: 10px; /* Space for scrollbar */
+  padding-bottom: 10px;
 }
 
 .best-selling-books {
@@ -1042,6 +1103,13 @@ loadCartItems()
   padding: 10px;
   border: 1px solid #eee;
   border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.best-selling-book:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .best-selling-book-cover {
@@ -1107,13 +1175,56 @@ loadCartItems()
   background-color: #162f5a;
 }
 
-/* Responsive Styles */
-@media (max-width: 1024px) {
-  .related-books-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* Success Message Styles */
+.success-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
+.success-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+}
+
+.success-content h3 {
+  color: #4CAF50;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.success-content p {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.close-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.close-btn:hover {
+  background-color: #45a049;
+}
+
+/* Responsive Styles */
 @media (max-width: 768px) {
   .book-main-content {
     flex-direction: column-reverse;
@@ -1121,16 +1232,6 @@ loadCartItems()
   
   .book-cover {
     margin-bottom: 20px;
-  }
-  
-  .related-books-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .related-books-grid {
-    grid-template-columns: 1fr;
   }
   
   .reviews-summary {
@@ -1150,4 +1251,3 @@ loadCartItems()
   }
 }
 </style>
-```
