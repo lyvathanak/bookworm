@@ -20,6 +20,20 @@ export class OrdersService {
     return this.ordersRepository.find({ relations: ['user', 'items', 'items.book'] });
   }
 
+  // --- Add the new findOne method here ---
+  async findOne(orderId: number): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: { order_id: orderId },
+      // Important: Include all the relations you need in other services
+      relations: ['user', 'items', 'items.book'], 
+    });
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+    return order;
+  }
+  // -----------------------------------------
+
   async updateStatus(id: number, status: string): Promise<Order> {
     const order = await this.ordersRepository.findOneBy({ order_id: id });
     if (!order) {

@@ -4,16 +4,36 @@ import { Repository } from 'typeorm';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Book } from './entities/book.entity';
+import { Author } from '../authors/entities/author.entity'; // Import the Author entity
 
 @Injectable()
 export class BooksService {
   constructor(
     @InjectRepository(Book)
     private booksRepository: Repository<Book>,
+    // Inject the Author repository to find authors
+    @InjectRepository(Author)
+    private authorsRepository: Repository<Author>,
   ) {}
 
-  create(createBookDto: CreateBookDto): Promise<Book> {
-    const book = this.booksRepository.create(createBookDto);
+  /**
+   * Creates a new book and associates it with an author.
+   */
+  async create(createBookDto: CreateBookDto): Promise<Book> {
+    const { authorId, ...restOfBookData } = createBookDto;
+
+    // Find the author by the provided ID
+    const author = await this.authorsRepository.findOneBy({ author_id: authorId });
+    if (!author) {
+      throw new NotFoundException(`Author with ID ${authorId} not found`);
+    }
+    
+    // Create the book instance with the author object relationship
+    const book = this.booksRepository.create({
+      ...restOfBookData,
+      author: author,
+    });
+
     return this.booksRepository.save(book);
   }
 
@@ -29,13 +49,32 @@ export class BooksService {
     return book;
   }
 
+  /**
+   * Updates a book's details, including its author if an authorId is provided.
+   */
   async update(bid: number, updateBookDto: UpdateBookDto): Promise<Book> {
-    await this.booksRepository.update(bid, updateBookDto);
-    const updatedBook = await this.findOne(bid);
-    if (!updatedBook) {
+    const { authorId, ...restOfUpdateData } = updateBookDto;
+    
+    // Preload finds the entity and applies the new data
+    const bookToUpdate = await this.booksRepository.preload({
+        bid: bid,
+        ...restOfUpdateData,
+    });
+
+    if (!bookToUpdate) {
         throw new NotFoundException(`Book with ID ${bid} not found`);
     }
-    return updatedBook;
+
+    // If a new authorId was provided, find and update the author relationship
+    if (authorId) {
+        const author = await this.authorsRepository.findOneBy({ author_id: authorId });
+        if (!author) {
+            throw new NotFoundException(`Author with ID ${authorId} not found`);
+        }
+        bookToUpdate.author = author;
+    }
+    
+    return this.booksRepository.save(bookToUpdate);
   }
 
   async remove(bid: number): Promise<void> {

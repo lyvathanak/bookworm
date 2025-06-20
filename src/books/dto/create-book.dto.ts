@@ -41,8 +41,11 @@ export class CreateBookDto {
   @IsEnum(BookStatus)
   status: BookStatus;
   
+  /**
+   * The ID of the author to associate with this book.
+   */
   @IsInt()
-  author_id: number;
+  authorId: number;
 
   @IsString()
   @IsOptional()

@@ -7,10 +7,12 @@ import { Author } from '../authors/entities/author.entity';
 import { Book } from '../books/entities/book.entity';
 import { Order } from '../orders/entities/order.entity';
 import { OrderItem } from '../orders/entities/order-item.entity';
+import { UsersModule } from '../users/users.module'; // <-- IMPORT THIS
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Author, Book, Order, OrderItem]),
+    UsersModule, // <-- ADD THIS
   ],
   providers: [SeederService],
   controllers: [SeederController],

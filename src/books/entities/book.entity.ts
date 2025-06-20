@@ -12,12 +12,25 @@ export class Book {
     @Column() stock: number;
     @Column({ nullable: true }) image: string;
     @Column({ default: 'Physical' }) booktype: string;
-    @Column({ default: 'Active' }) status: string;
+    
+    @Column({ type: 'varchar', nullable: true })
+    ebook_pdf_path: string;
+    
+    @Column({ default: 'Active' })
+    status: string;
+
     @Column({ nullable: true }) isbn: string;
     @Column({ nullable: true }) edition_language: string;
     @Column({ nullable: true }) pages: number;
     @Column({ nullable: true }) publisher: string;
-    @Column() author_id: number;
-    @ManyToOne(() => Author, author => author.books) @JoinColumn({ name: 'author_id' }) author: Author;
+    
+    // --- REMOVE THIS LINE ---
+    // @Column() author_id: number; 
+
+    // This is all you need for the relationship
+    @ManyToOne(() => Author, author => author.books) 
+    @JoinColumn({ name: 'author_id' }) // This tells TypeORM to create an 'author_id' column
+    author: Author;
+    
     @OneToMany(() => Rating, rating => rating.book) ratings: Rating[];
 }

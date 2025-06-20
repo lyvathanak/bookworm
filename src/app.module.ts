@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+// 1. Import ConfigService here
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -20,6 +22,8 @@ import { Rating } from './ratings/entities/rating.entity';
 import { Cart } from './cart/entities/cart.entity';
 import { Wishlist } from './wishlist/entities/wishlist.entity';
 import { SeederModule } from './seeder/seeder.module';
+import { PaymentModule } from './payment/payment.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -34,7 +38,28 @@ import { SeederModule } from './seeder/seeder.module';
       entities: [User, Book, Author, Order, OrderItem, Rating, Cart, Wishlist],
       synchronize: true,
     }),
-    UsersModule, AuthModule, BooksModule, AuthorsModule, OrdersModule, RatingsModule, CartModule, WishlistModule, SeederModule,
+    
+    // 2. This is the corrected MailerModule configuration
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          host: configService.get('EMAIL_HOST'),
+          port: Number(configService.get('EMAIL_PORT')),
+          secure: false,
+          auth: {
+            user: configService.get('EMAIL_USER'),
+            pass: configService.get('EMAIL_PASSWORD'),
+          },
+        },
+        defaults: {
+          from: '"Bookworm" <no-reply@bookworm.com>',
+        },
+      }),
+      inject: [ConfigService],
+    }),
+
+    UsersModule, AuthModule, BooksModule, AuthorsModule, OrdersModule, RatingsModule, CartModule, WishlistModule, SeederModule, PaymentModule, EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
