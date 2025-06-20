@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-// 1. Import ConfigService here
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { AppController } from './app.controller';
@@ -30,13 +29,12 @@ import { EmailModule } from './email/email.module';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
+      url: process.env.DATABASE_URL, // Use the single connection URL
+      ssl: {
+        rejectUnauthorized: false, // Required for Render's internal connections
+      },
+      synchronize: true, // Be cautious with this in real production
       entities: [User, Book, Author, Order, OrderItem, Rating, Cart, Wishlist],
-      synchronize: true,
     }),
     
     // 2. This is the corrected MailerModule configuration
