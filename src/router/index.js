@@ -35,7 +35,7 @@ const routes = [
     path: '/checkout',
     name: 'checkout',
     component: CheckoutPageVue,
-    meta: { requiresAuth: true } // Requires authentication
+    meta: { requiresAuth: true }, // Requires authentication
   },
   {
     path: '/cart',
@@ -56,7 +56,7 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: () => import('../views/ProfileView.vue'),
-    meta: { requiresAuth: true } // Requires authentication
+    meta: { requiresAuth: true }, // Requires authentication
   },
   {
     path: '/auth',
@@ -84,6 +84,14 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    // For the checkout route, always scroll to top
+    if (to.name === 'checkout') {
+      return { top: 0 };
+    }
+    // For other routes, return saved position if available, else scroll to top
+    return savedPosition || { top: 0 };
+  },
 });
 
 router.beforeEach((to, from, next) => {

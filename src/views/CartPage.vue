@@ -86,7 +86,6 @@ const parsePrice = (price) => {
     return price;
   }
   if (typeof price === 'string') {
-    // Remove dollar sign and any other non-numeric characters except decimal point
     const cleanPrice = price.replace(/[^0-9.]/g, '');
     const parsed = parseFloat(cleanPrice);
     return isNaN(parsed) ? 0 : parsed;
@@ -102,11 +101,8 @@ onMounted(() => {
       cartItems.value = JSON.parse(storedCart).map(item => ({
         ...item,
         quantity: item.quantity ? parseInt(item.quantity) : 1,
-        // Ensure price is always a number
         price: parsePrice(item.price)
       }));
-      
-      // Save the cleaned cart back to localStorage
       updateCart();
     }
   } catch (error) {
@@ -146,15 +142,12 @@ const confirmRemoveItem = (id) => {
 
 const updateCart = () => {
   try {
-    // Ensure all prices are numbers before saving
     const cleanedCart = cartItems.value.map(item => ({
       ...item,
       price: parsePrice(item.price),
       quantity: parseInt(item.quantity) || 1
     }));
     localStorage.setItem('cartItems', JSON.stringify(cleanedCart));
-    
-    // Dispatch event to update cart count in navbar
     window.dispatchEvent(new CustomEvent('cart-updated'));
   } catch (error) {
     console.error('Error saving cart to localStorage:', error);
