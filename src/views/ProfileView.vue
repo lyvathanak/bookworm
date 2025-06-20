@@ -5,19 +5,21 @@
         :user="authStore.user" 
         :activeSection="activeSection"
         @set-section="setActiveSection"
-        @logout="handleLogout" 
+        @logout="handleLogout"
+        @upload-image="handleImageUpload"
       />
       
       <div class="profile-content">
         <div class="welcome-section">
           <h1>Welcome Back, {{ authStore.user?.firstName || 'User' }}!</h1>
+          <p v-if="authStore.isLoading" class="loading-indicator">Saving changes...</p>
         </div>
 
         <div v-if="activeSection === 'profile'" class="content-section">
           <MyProfile 
             :user="authStore.user" 
+            :is-loading="authStore.isLoading"
             @update-profile="updateProfile"
-            @upload-image="uploadProfileImage"
           />
         </div>
         
@@ -32,12 +34,16 @@
         <div v-if="activeSection === 'address'" class="content-section">
           <MyAddress 
             :user="authStore.user" 
+            :is-loading="authStore.isLoading"
             @update-address="updateAddress"
           />
         </div>
         
         <div v-if="activeSection === 'password'" class="content-section">
-          <ChangePassword @change-password="changePassword" />
+          <ChangePassword 
+            :is-loading="authStore.isLoading"
+            @change-password="changePassword" 
+          />
         </div>
       </div>
     </div>
@@ -59,72 +65,87 @@ import ChangePassword from '@/components/UserProfile/ChangePassword.vue'
 const router = useRouter()
 const route = useRoute()
 const activeSection = ref('profile')
-const isLoggingOut = ref(false)
 
+// Redirect if not authenticated
 if (!authStore.isAuthenticated) {
-  router.push(`/auth/signin?redirect=${encodeURIComponent(route.fullPath)}`)
+  router.push({
+    path: '/auth/signin',
+    query: { redirect: route.fullPath }
+  })
 }
 
+// Set active section from route query
 onMounted(() => {
   if (route.query.section) {
     activeSection.value = route.query.section
   }
-});
+})
 
 const setActiveSection = (section) => {
   activeSection.value = section
+  // Update URL without reloading
   router.replace({ query: { section } })
 }
 
-const updateProfile = (profileData) => {
-  authStore.updateUser(profileData)
-  console.log('Profile updated successfully!')
-}
-
-const uploadProfileImage = (imageFile) => {
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    authStore.updateUser({
-      profileImage: e.target.result
-    })
-    console.log('Profile image updated successfully (simulated).')
+const updateProfile = async (profileData) => {
+  try {
+    await authStore.updateUser(profileData)
+    console.log('Profile updated successfully!')
+  } catch (error) {
+    console.error('Profile update failed:', error)
   }
-  reader.readAsDataURL(imageFile)
 }
 
-const updateAddress = (addressData) => {
-  authStore.updateUser({
-    address: addressData
-  })
-  console.log('Address updated successfully!')
+const handleImageUpload = async (imageFile) => {
+  try {
+    await authStore.updateUser({ profileImage: imageFile })
+    console.log('Profile image updated successfully!')
+  } catch (error) {
+    console.error('Image upload failed:', error)
+  }
 }
 
-const changePassword = (passwordData) => {
-  const success = authStore.changePassword(passwordData.currentPassword, passwordData.newPassword)
-  if (success) {
-    console.log('Password changed successfully!')
-  } else {
-    console.error('Failed to change password. Please try again.')
+const updateAddress = async (addressData) => {
+  try {
+    await authStore.updateUser({ address: addressData })
+    console.log('Address updated successfully!')
+  } catch (error) {
+    console.error('Address update failed:', error)
+  }
+}
+
+const changePassword = async (passwordData) => {
+  try {
+    const success = await authStore.changePassword(
+      passwordData.currentPassword,
+      passwordData.newPassword
+    )
+    if (success) {
+      console.log('Password changed successfully!')
+      return true
+    } else {
+      console.error('Failed to change password')
+      return false
+    }
+  } catch (error) {
+    console.error('Password change error:', error)
+    return false
   }
 }
 
 const handleLogout = async () => {
-  isLoggingOut.value = true
   try {
-    await authStore.logout() // Wait for the logout delay
-    router.push('/') // Redirect to home page after logout
+    await authStore.logout()
+    router.push('/')
   } catch (error) {
     console.error('Logout error:', error)
-  } finally {
-    isLoggingOut.value = false
   }
 }
 </script>
 
-
 <style scoped>
 .profile-page {
-  min-height: calc(100vh - 160px); /* Account for header and footer */
+  min-height: calc(100vh - 160px);
   background-color: #f8f9fa;
   padding: 20px 0;
 }
@@ -133,7 +154,6 @@ const handleLogout = async () => {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
-  gap: 0;
   background: white;
   border-radius: 12px;
   overflow: hidden;
@@ -143,6 +163,7 @@ const handleLogout = async () => {
 .profile-content {
   flex: 1;
   background: #f8f9fa;
+  min-height: 600px;
 }
 
 .welcome-section {
@@ -152,18 +173,24 @@ const handleLogout = async () => {
 }
 
 .welcome-section h1 {
-  margin: 0;
+  margin: 0 0 8px 0;
   font-size: 28px;
   color: #333;
   font-weight: 600;
 }
 
+.loading-indicator {
+  margin: 0;
+  color: #4a90e2;
+  font-size: 14px;
+}
+
 .content-section {
-  background: #e8e9ea;
+  background: white;
   padding: 30px;
   margin: 0;
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 @media (max-width: 768px) {
@@ -182,6 +209,17 @@ const handleLogout = async () => {
   
   .content-section {
     padding: 20px;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-section h1 {
+    font-size: 24px;
+  }
+  
+  .content-section {
+    padding: 15px;
   }
 }
 </style>

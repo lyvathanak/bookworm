@@ -4,8 +4,9 @@ export const authStore = reactive({
   user: null,
   isAuthenticated: false,
   orders: [],
+  isLoading: false,
 
-  // Initialize user data (used after successful login or signup)
+  // Initialize user data
   initUser(userData) {
     this.user = {
       id: userData.id || Date.now(),
@@ -13,7 +14,7 @@ export const authStore = reactive({
       lastName: userData.lastName || '',
       email: userData.email || '',
       contact: userData.contact || '',
-      password: userData.password || '', // Ensure password is preserved
+      password: userData.password || '',
       profileImage: userData.profileImage || null,
       createdAt: userData.createdAt || new Date().toISOString(),
       dob: userData.dob || null,
@@ -29,12 +30,37 @@ export const authStore = reactive({
     this.saveToStorage()
   },
 
-  // Update user data
-  updateUser(updates) {
-    if (this.user) {
+  // Update user data with image handling
+  async updateUser(updates) {
+    if (!this.user) return
+    
+    try {
+      this.isLoading = true
+      
+      // Handle profile image upload
+      if (updates.profileImage && updates.profileImage instanceof File) {
+        updates.profileImage = await this.convertImageToBase64(updates.profileImage)
+      }
+      
       Object.assign(this.user, updates)
       this.saveToStorage()
+      return true
+    } catch (error) {
+      console.error('Error updating user:', error)
+      return false
+    } finally {
+      this.isLoading = false
     }
+  },
+
+  // Convert image file to base64
+  convertImageToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = error => reject(error)
+      reader.readAsDataURL(file)
+    })
   },
 
   // Add order from checkout
@@ -43,16 +69,22 @@ export const authStore = reactive({
       id: Date.now(),
       ...orderData,
       orderDate: new Date().toISOString(),
-      status: 'Order in Progress'
+      status: 'Processing',
+      trackingNumber: 'TRK' + Math.floor(Math.random() * 1000000)
     }
-    this.orders.push(order)
+    this.orders.unshift(order) // Add to beginning of array
     this.saveToStorage()
+    return order
   },
 
   // Save to localStorage
   saveToStorage() {
-    localStorage.setItem('user', JSON.stringify(this.user))
-    localStorage.setItem('orders', JSON.stringify(this.orders))
+    try {
+      localStorage.setItem('user', JSON.stringify(this.user))
+      localStorage.setItem('orders', JSON.stringify(this.orders))
+    } catch (error) {
+      console.error('Error saving to localStorage:', error)
+    }
   },
 
   // Load from localStorage
@@ -64,67 +96,74 @@ export const authStore = reactive({
       if (savedUser && savedUser !== 'null') {
         this.user = JSON.parse(savedUser)
         this.isAuthenticated = true
-      } else {
-        this.user = null
-        this.isAuthenticated = false
       }
       
       if (savedOrders) {
         this.orders = JSON.parse(savedOrders)
-      } else {
-        this.orders = []
       }
     } catch (error) {
-      console.error('Error loading user data from localStorage:', error)
-      localStorage.removeItem('user')
-      localStorage.removeItem('orders')
-      this.user = null
-      this.isAuthenticated = false
-      this.orders = []
+      console.error('Error loading from localStorage:', error)
+      this.clearStorage()
     }
   },
 
-  // Logout - Clears state and localStorage with a delay
+  // Clear storage
+  clearStorage() {
+    localStorage.removeItem('user')
+    localStorage.removeItem('orders')
+    this.user = null
+    this.isAuthenticated = false
+    this.orders = []
+  },
+
+  // Logout
   logout() {
     return new Promise((resolve) => {
+      this.isLoading = true
       setTimeout(() => {
-        this.user = null
-        this.isAuthenticated = false
-        this.orders = []
-        localStorage.removeItem('user')
-        localStorage.removeItem('orders')
-        console.log('User logged out. State and localStorage cleared.')
+        this.clearStorage()
+        this.isLoading = false
+        console.log('User logged out successfully')
         resolve()
-      }, 2000) // 2-second delay
+      }, 1000) // 1-second delay
     })
   },
 
   // Change password
   changePassword(passwordData) {
-    if (this.user && passwordData.currentPassword && passwordData.newPassword) {
-      if (this.user.password === passwordData.currentPassword) {
-        if (this.validatePassword(passwordData.newPassword)) {
-          this.user.password = passwordData.newPassword
-          this.saveToStorage()
-          console.log('Password changed successfully for user:', this.user.email)
-          return true
-        } else {
-          console.log('New password does not meet requirements.')
-          return false
-        }
-      } else {
-        console.log('Invalid current password.')
-        return false
-      }
+    if (!this.user || !passwordData.currentPassword || !passwordData.newPassword) {
+      console.log('Password change failed. Invalid data.')
+      return false
     }
-    console.log('Password change failed. Invalid data.')
-    return false
+
+    if (this.user.password !== passwordData.currentPassword) {
+      console.log('Invalid current password.')
+      return false
+    }
+
+    if (!this.validatePassword(passwordData.newPassword)) {
+      console.log('New password does not meet requirements.')
+      return false
+    }
+
+    this.user.password = passwordData.newPassword
+    this.saveToStorage()
+    console.log('Password changed successfully')
+    return true
   },
 
-  // Validate password
+  // Validate password strength
   validatePassword(password) {
     const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
     return re.test(password)
+  },
+
+  // Get user initials for avatar placeholder
+  getUserInitials() {
+    if (!this.user) return ''
+    const first = this.user.firstName?.charAt(0) || ''
+    const last = this.user.lastName?.charAt(0) || ''
+    return `${first}${last}`.toUpperCase()
   }
 })
 
