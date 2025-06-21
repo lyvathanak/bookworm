@@ -32,6 +32,14 @@ export class OrdersService {
     }
     return order;
   }
+
+    async findForUser(userId: number): Promise<Order[]> {
+    return this.ordersRepository.find({
+      where: { user: { uid: userId } },
+      relations: ['items', 'items.book'],
+      order: { created_at: 'DESC' } // Show newest orders first
+    });
+  }
   // -----------------------------------------
 
   async updateStatus(id: number, status: string): Promise<Order> {

@@ -1,17 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express'; // Import this
+import { join } from 'path'; // Import join from path
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Specify NestExpressApplication for access to express-specific methods
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // THIS IS THE CRITICAL FIX
-  // By enabling CORS without specific options, we tell the backend
-  // to be more permissive during development, which will allow
-  // requests from your Vue.js development server.
   app.enableCors();
 
-  // Use global pipes for input validation
+  // This line tells NestJS to serve static files from the 'storage' directory
+  // For example, a file at 'storage/avatars/user1.jpg' will be accessible at '/avatars/user1.jpg'
+  app.useStaticAssets(join(__dirname, '..', 'storage'), {
+    prefix: '/', // You can set a prefix like /static/ if you want
+  });
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   await app.listen(5000);

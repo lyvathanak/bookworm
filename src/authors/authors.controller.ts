@@ -17,6 +17,11 @@ export class AuthorsController {
   findAll() {
     return this.authorsService.findAll();
   }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.authorsService.findOne(+id);
+  }
   
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateAuthorDto: CreateAuthorDto) {

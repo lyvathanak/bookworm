@@ -3,10 +3,22 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../users/entities/user.entity';
 import { Book } from '../books/entities/book.entity';
 import * as path from 'path';
+
 @Injectable()
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
 
+  // Generic email sending method (with HTML support)
+  async send(to: string, subject: string, html: string): Promise<void> {
+    await this.mailerService.sendMail({
+      to,
+      subject,
+      html, // Rich HTML content
+    });
+    console.log(`Custom email sent to ${to}`);
+  }
+
+  // Specific purchase confirmation email with PDF attachment
   async sendPurchaseConfirmation(user: User, book: Book): Promise<void> {
     if (!book.ebook_pdf_path) {
       console.error(`E-book path not found for book ID: ${book.bid}`);

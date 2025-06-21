@@ -2,6 +2,12 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, Jo
 import { User } from '../../users/entities/user.entity';
 import { Book } from '../../books/entities/book.entity';
 
+export enum RatingStatus {
+    PENDING = 'Pending',
+    APPROVED = 'Approved',
+    REJECTED = 'Rejected',
+}
+
 @Entity('rating')
 export class Rating {
   @PrimaryGeneratedColumn()
@@ -20,4 +26,11 @@ export class Rating {
   @ManyToOne(() => Book, book => book.ratings)
   @JoinColumn({ name: 'bid' })
   book: Book;
+
+  @Column({
+  type: 'enum',
+  enum: RatingStatus,
+  default: RatingStatus.PENDING,
+  })
+  status: RatingStatus;
 }

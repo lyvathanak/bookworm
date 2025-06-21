@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Order } from '../../orders/entities/order.entity';
 import { Rating } from '../../ratings/entities/rating.entity';
+import { Follow } from '../../follows/entities/follow.entity';
 
 export enum UserRole {
     ADMIN = 'admin',
@@ -39,11 +40,16 @@ export class User {
     @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
     role: UserRole;
 
+    @Column({ nullable: true })
+    avatar: string;
+
     @OneToMany(() => Order, order => order.user)
     orders: Order[];
     
     @OneToMany(() => Rating, rating => rating.user)
     ratings: Rating[];
 
+    @OneToMany(() => Follow, follow => follow.user)
+    following: Follow[];
     // The @BeforeInsert hook has been REMOVED from this file.
 }

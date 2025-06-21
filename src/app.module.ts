@@ -1,3 +1,5 @@
+// In lyvathanak/bookworm/bookworm-backend/src/app.module.ts
+
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -12,6 +14,10 @@ import { OrdersModule } from './orders/orders.module';
 import { RatingsModule } from './ratings/ratings.module';
 import { CartModule } from './cart/cart.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { SeederModule } from './seeder/seeder.module';
+import { PaymentModule } from './payment/payment.module';
+import { EmailModule } from './email/email.module'; // 1. Make sure EmailModule is imported
+import { FollowsModule } from './follows/follows.module';
 import { User } from './users/entities/user.entity';
 import { Book } from './books/entities/book.entity';
 import { Author } from './authors/entities/author.entity';
@@ -20,24 +26,30 @@ import { OrderItem } from './orders/entities/order-item.entity';
 import { Rating } from './ratings/entities/rating.entity';
 import { Cart } from './cart/entities/cart.entity';
 import { Wishlist } from './wishlist/entities/wishlist.entity';
-import { SeederModule } from './seeder/seeder.module';
-import { PaymentModule } from './payment/payment.module';
-import { EmailModule } from './email/email.module';
+import { Follow } from './follows/entities/follow.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL, // Use the single connection URL
-      ssl: {
-        rejectUnauthorized: false, // Required for Render's internal connections
+
+    // --- THIS IS THE UPDATED SECTION ---
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const isProduction = configService.get<string>('NODE_ENV') === 'production';
+        return {
+          type: 'postgres',
+          url: configService.get<string>('DATABASE_URL'),
+          // Use SSL only in production
+          ssl: isProduction ? { rejectUnauthorized: false } : false,
+          synchronize: true,
+          entities: [User, Book, Author, Order, OrderItem, Rating, Cart, Wishlist, Follow],
+        };
       },
-      synchronize: true, // Be cautious with this in real production
-      entities: [User, Book, Author, Order, OrderItem, Rating, Cart, Wishlist],
     }),
-    
-    // 2. This is the corrected MailerModule configuration
+    // ------------------------------------
+
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -57,7 +69,18 @@ import { EmailModule } from './email/email.module';
       inject: [ConfigService],
     }),
 
-    UsersModule, AuthModule, BooksModule, AuthorsModule, OrdersModule, RatingsModule, CartModule, WishlistModule, SeederModule, PaymentModule, EmailModule,
+    UsersModule, 
+    AuthModule, 
+    BooksModule, 
+    AuthorsModule, 
+    OrdersModule, 
+    RatingsModule, 
+    CartModule, 
+    WishlistModule, 
+    SeederModule, 
+    PaymentModule, 
+    EmailModule,
+    FollowsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

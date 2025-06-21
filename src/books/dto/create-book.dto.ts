@@ -9,7 +9,6 @@ enum BookStatus {
     ACTIVE = 'Active',
     DRAFT = 'Draft',
 }
-
 export class CreateBookDto {
   @IsString()
   @Length(1, 255)
@@ -45,7 +44,7 @@ export class CreateBookDto {
    * The ID of the author to associate with this book.
    */
   @IsInt()
-  authorId: number;
+  author_id: number;
 
   @IsString()
   @IsOptional()

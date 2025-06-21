@@ -5,6 +5,7 @@ import { Cart } from './entities/cart.entity';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { User } from '../users/entities/user.entity';
 import { Book } from '../books/entities/book.entity';
+import { UpdateCartDto } from './dto/update-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -50,6 +51,19 @@ export class CartService {
       where: { user: { uid: userId } },
       relations: ['book'], // Also load the book details for each cart item
     });
+  }
+  
+    async updateItemQuantity(userId: number, cartItemId: number, updateCartDto: UpdateCartDto): Promise<Cart> {
+    const cartItem = await this.cartRepository.findOne({ 
+      where: { cart_id: cartItemId, user: { uid: userId } }
+    });
+
+    if (!cartItem) {
+      throw new NotFoundException(`Cart item with ID ${cartItemId} not found for this user`);
+    }
+
+    cartItem.amount = updateCartDto.quantity;
+    return this.cartRepository.save(cartItem);
   }
 
   async removeItemFromCart(userId: number, cartItemId: number): Promise<void> {

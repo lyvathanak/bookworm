@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Rating } from './entities/rating.entity';
+import { Rating, RatingStatus } from './entities/rating.entity'; // <-- ADD RatingStatus TO THIS IMPORT
 
 @Injectable()
 export class RatingsService {
@@ -10,17 +11,23 @@ export class RatingsService {
     private ratingsRepository: Repository<Rating>,
   ) {}
 
-  // For Admin: Find all ratings for moderation
   findAllForAdmin(): Promise<Rating[]> {
-    return this.ratingsRepository.find({ relations: ['user', 'book'] });
+    return this.ratingsRepository.find({ 
+      relations: ['user', 'book'],
+      order: { created_at: 'DESC' } 
+    });
   }
   
-  // For Admin: Delete a rating
+  async updateStatus(id: number, status: RatingStatus): Promise<Rating> {
+    const rating = await this.ratingsRepository.findOneBy({ rating_id: id });
+    if (!rating) {
+      throw new NotFoundException(`Rating with ID ${id} not found`);
+    }
+    rating.status = status;
+    return this.ratingsRepository.save(rating);
+  }
+
   async remove(id: number): Promise<void> {
     await this.ratingsRepository.delete(id);
   }
-
-  // For User: Create a new rating
-  // This logic would be more complex, checking if the user purchased the book, etc.
-  // createForUser(...)
 }

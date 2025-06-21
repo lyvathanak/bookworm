@@ -21,8 +21,15 @@ export class AuthorsService {
   }
 
   async findOne(id: number): Promise<Author> {
-    const author = await this.authorsRepository.findOneBy({ author_id: id });
-    if (!author) { throw new NotFoundException(`Author with ID ${id} not found`); }
+    // Add the 'relations' option here to fetch the author's books
+    const author = await this.authorsRepository.findOne({
+      where: { author_id: id },
+      relations: ['books'], 
+    });
+
+    if (!author) {
+      throw new NotFoundException(`Author with ID ${id} not found`);
+    }
     return author;
   }
 
