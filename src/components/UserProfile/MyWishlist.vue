@@ -42,42 +42,43 @@ export default {
     const wishlistItems = ref([])
 
     const loadWishlist = () => {
-      try {
-        const savedWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
-        wishlistItems.value = savedWishlist.map(item => ({
-          ...item,
-          price: parseFloat(item.price.replace('$', '')) || 0,
-          quantity: item.quantity || 1
-        }))
-      } catch (error) {
-        console.error('Error loading wishlist:', error)
-        wishlistItems.value = []
-      }
-    }
+  try {
+    const savedWishlist = JSON.parse(localStorage.getItem('bookworm-wishlist') || '[]');
+    wishlistItems.value = savedWishlist.map(item => ({
+      ...item,
+      price: parseFloat(item.price.replace('$', '')) || 0,
+      quantity: item.quantity || 1,
+      coverImage: item.coverImage || item.image // Handle both property names
+    }));
+  } catch (error) {
+    console.error('Error loading wishlist:', error);
+    wishlistItems.value = [];
+  }
+};
 
-    const removeFromWishlist = (bookId) => {
-      wishlistItems.value = wishlistItems.value.filter(item => item.id !== bookId)
-      localStorage.setItem('wishlist', JSON.stringify(wishlistItems.value))
-      window.dispatchEvent(new CustomEvent('wishlist-updated'))
-    }
+const removeFromWishlist = (bookId) => {
+  wishlistItems.value = wishlistItems.value.filter(item => item.id !== bookId);
+  localStorage.setItem('bookworm-wishlist', JSON.stringify(wishlistItems.value));
+  window.dispatchEvent(new CustomEvent('wishlist-updated'));
+};
 
-    const addToCart = (item) => {
-      try {
-        const existingCart = JSON.parse(localStorage.getItem('cartItems') || '[]')
-        const existingItem = existingCart.find(cartItem => cartItem.id === item.id)
-        if (existingItem) {
-          existingItem.quantity += item.quantity
-        } else {
-          existingCart.push({ ...item, quantity: item.quantity })
-        }
-        localStorage.setItem('cartItems', JSON.stringify(existingCart))
-        window.dispatchEvent(new CustomEvent('cart-updated'))
-        alert('Added to cart successfully!')
-      } catch (error) {
-        console.error('Error adding to cart:', error)
-        alert('Error adding to cart. Please try again.')
-      }
+const addToCart = (item) => {
+  try {
+    const existingCart = JSON.parse(localStorage.getItem('cartItems') || '[]');
+    const existingItem = existingCart.find(cartItem => cartItem.id === item.id);
+    if (existingItem) {
+      existingItem.quantity += item.quantity;
+    } else {
+      existingCart.push({ ...item, quantity: item.quantity });
     }
+    localStorage.setItem('cartItems', JSON.stringify(existingCart));
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    alert('Added to cart successfully!');
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    alert('Error adding to cart. Please try again.');
+  }
+};
 
     onMounted(() => {
       loadWishlist()
