@@ -1,13 +1,14 @@
 import axios from 'axios';
 
+// Use environment variable for backend API URL (VITE_API_URL)
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: import.meta.env.VITE_API_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// --- Interceptors ---
+// Add JWT token for admin from localStorage (use a distinct key if you like)
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken'); // or 'adminAuthToken' if you use a separate token
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -22,7 +23,6 @@ apiClient.interceptors.response.use((response) => response, (error) => {
     return Promise.reject(error);
 });
 
-
 // --- The Complete and Correct API Definition ---
 const api = {
   // Auth
@@ -33,7 +33,6 @@ const api = {
   createBook: (data) => apiClient.post('/books', data),
   updateBook: (id, data) => apiClient.patch(`/books/${id}`, data),
   deleteBook: (id) => apiClient.delete(`/books/${id}`),
-  // File uploads use FormData and let Axios set the header automatically
   uploadBookImage: (id, formData) => apiClient.post(`/books/${id}/upload-image`, formData),
 
   // Authors
@@ -41,7 +40,6 @@ const api = {
   createAuthor: (data) => apiClient.post('/authors', data),
   updateAuthor: (id, data) => apiClient.patch(`/authors/${id}`, data),
   deleteAuthor: (id) => apiClient.delete(`/authors/${id}`),
-  // File uploads use FormData and let Axios set the header automatically
   uploadAuthorAvatar: (id, formData) => apiClient.post(`/authors/${id}/upload-avatar`, formData),
   
   // Orders
