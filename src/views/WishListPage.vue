@@ -1,373 +1,53 @@
 <template>
   <div class="wishlist-page">
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-      <a href="/home" class="breadcrumb-link home">Home</a>
-      <span class="breadcrumb-separator">/</span>
-      <span class="breadcrumb-current">Wish List</span>
-    </div>
-    
-    <!-- Page Title -->
-    <h1 class="page-title">Wishlist</h1>
-    
-    <!-- Empty Wishlist Message -->
-    <div v-if="wishlistItems.length === 0" class="empty-wishlist">
-      <div class="empty-icon">
-        <i class="far fa-heart"></i>
-      </div>
+    <h1 class="page-title">My Wishlist</h1>
+    <div v-if="wishlistStore.isLoading">Loading...</div>
+    <div v-else-if="wishlistStore.items.length === 0" class="empty-wishlist">
       <h2>Your wishlist is empty</h2>
-      <p>Browse our books and add items you like to your wishlist!</p>
-      <router-link to="/home" class="browse-books-btn">Browse Books</router-link>
     </div>
-    
-    <!-- Books Grid -->
-    <template v-else>
-      <div class="books-grid">
-        <!-- Dynamic Book Items -->
-        <div class="book-item" v-for="item in displayedItems" :key="item.id">
-          <div class="book-cover" @click="goToBookDetail(item.id)">
-            <img v-if="item.coverImage" :src="item.coverImage" :alt="item.title" class="book-cover-img">
-            <div v-else class="book-cover-placeholder"></div>
-          </div>
-          <h3 class="book-title">{{ item.title }}</h3>
-          <p class="book-author">{{ item.author || 'Unknown Author' }}</p>
-          <div class="book-actions">
-            <span class="book-price">{{ item.price }}</span>
-            <div class="action-buttons">
-              <button class="remove-btn" @click="removeFromWishlist(item.id)" title="Remove from wishlist">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-              <button class="add-to-cart-btn" @click="addToCart(item)">Add to cart</button>
-            </div>
-          </div>
+    <div v-else class="books-grid">
+      <div class="book-item" v-for="item in wishlistStore.items" :key="item.wishid">
+        <img :src="`http://localhost:5000/${item.book.image}`" :alt="item.book.title" class="book-cover-img" @click="goToBookDetail(item.book.bid)"/>
+        <h3 class="book-title">{{ item.book.title }}</h3>
+        <p class="book-author">{{ item.book.author.author_name }}</p>
+        <div class="book-actions">
+           <span class="book-price">${{ item.book.price.toFixed(2) }}</span>
+           <button class="remove-btn" @click="wishlistStore.toggleWishlist(item.book)" title="Remove">Remove</button>
+           <button class="add-to-cart-btn" @click="cartStore.addItem(item.book.bid, 1)">Add to Cart</button>
         </div>
       </div>
-      
-      <!-- More Button - Only show if there are more items to display -->
-      <div class="more-container" v-if="hasMoreItems">
-        <button class="more-btn" @click="loadMore">More</button>
-      </div>
-    </template>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { wishlistStore } from '@/store/wishlist';
+import { cartStore } from '@/store/cart';
 
-const router = useRouter()
+const router = useRouter();
 
-// Wishlist state
-const wishlistItems = ref([])
-const displayCount = ref(8)
-const cartItems = ref([])
-
-// Load wishlist items from localStorage
-const loadWishlist = () => {
-  try {
-    // Change the key to 'bookworm-wishlist' to match what's used in DescriptionPage.vue
-    const savedWishlist = JSON.parse(localStorage.getItem('bookworm-wishlist') || '[]')
-    wishlistItems.value = savedWishlist.map(item => ({
-      ...item,
-      coverImage: item.image || item.coverImage, // Support both image property names
-      author: item.author || 'Unknown Author' // Ensure author property exists
-    }))
-  } catch (error) {
-    console.error('Error loading wishlist:', error)
-    wishlistItems.value = []
-  }
-}
-
-// Load cart items from localStorage
-const loadCart = () => {
-  try {
-    cartItems.value = JSON.parse(localStorage.getItem('cartItems') || '[]')
-  } catch (error) {
-    console.error('Error loading cart:', error)
-    cartItems.value = []
-  }
-}
-
-// Computed property to determine which items to display
-const displayedItems = computed(() => {
-  return wishlistItems.value.slice(0, displayCount.value)
-})
-
-// Determine if there are more items to show
-const hasMoreItems = computed(() => {
-  return displayCount.value < wishlistItems.value.length
-})
-
-// Function to navigate to book details
-const goToBookDetail = (bookId) => {
-  router.push({ name: 'book-description', params: { id: bookId } })
-}
-
-// Function to remove item from wishlist
-const removeFromWishlist = (bookId) => {
-  // Update local state
-  wishlistItems.value = wishlistItems.value.filter(item => item.id !== bookId)
-  
-  // Update localStorage
-  localStorage.setItem('wishlist', JSON.stringify(wishlistItems.value))
-}
-
-// Function to add item to cart
-const addToCart = (book) => {
-  // Check if item is already in cart
-  const existingItem = cartItems.value.find(item => item.id === book.id)
-  
-  if (existingItem) {
-    existingItem.quantity += 1
-  } else {
-    cartItems.value.push({
-      id: book.id,
-      title: book.title,
-      price: book.price,
-      coverImage: book.coverImage,
-      quantity: 1
-    })
-  }
-  
-  // Save to localStorage
-  localStorage.setItem('cartItems', JSON.stringify(cartItems.value))
-  
-  // Show confirmation
-  alert(`"${book.title}" added to cart!`)
-}
-
-// Load more items function
-const loadMore = () => {
-  displayCount.value += 8
-  if (displayCount.value > wishlistItems.value.length) {
-    displayCount.value = wishlistItems.value.length
-  }
-}
-
-// Load data on component mount
 onMounted(() => {
-  loadWishlist()
-  loadCart()
-})
+  wishlistStore.fetchWishlist();
+});
+
+const goToBookDetail = (bookId) => {
+  router.push({ name: 'book-description', params: { id: bookId } });
+};
 </script>
 
 <style scoped>
-.wishlist-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.breadcrumb {
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-.breadcrumb-link {
-  text-decoration: none;
-}
-
-.home {
-  color: #e6d430;
-}
-
-.breadcrumb-separator {
-  margin: 0 5px;
-  color: #666;
-}
-
-.breadcrumb-current {
-  color: #666;
-}
-
-.page-title {
-  text-align: center;
-  margin-bottom: 40px;
-  font-size: 28px;
-  color: #333;
-}
-
-/* Empty wishlist styles */
-.empty-wishlist {
-  text-align: center;
-  padding: 40px 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  margin-bottom: 40px;
-}
-
-.empty-icon {
-  font-size: 60px;
-  color: #ddd;
-  margin-bottom: 20px;
-}
-
-.empty-wishlist h2 {
-  font-size: 24px;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.empty-wishlist p {
-  color: #666;
-  margin-bottom: 20px;
-}
-
-.browse-books-btn {
-  display: inline-block;
-  background-color: #e6d430;
-  color: #333;
-  padding: 10px 20px;
-  border-radius: 4px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: background-color 0.3s;
-}
-
-.browse-books-btn:hover {
-  background-color: #d6c420;
-}
-
-/* Books grid styles */
-.books-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 30px;
-  margin-bottom: 40px;
-}
-
-.book-item {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #eee;
-  padding: 15px;
-  border-radius: 8px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.book-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.book-cover {
-  margin-bottom: 15px;
-  aspect-ratio: 2/3;
-  overflow: hidden;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.book-cover-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.book-cover-placeholder {
-  width: 100%;
-  height: 100%;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-}
-
-.book-title {
-  font-size: 16px;
-  margin: 0 0 5px 0;
-  font-weight: 600;
-  color: #333;
-}
-
-.book-author {
-  font-size: 14px;
-  margin: 0 0 10px 0;
-  color: #666;
-}
-
-.book-actions {
-  display: flex;
-  flex-direction: column;
-  margin-top: auto;
-}
-
-.book-price {
-  font-weight: bold;
-  font-size: 16px;
-  margin-bottom: 10px;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.add-to-cart-btn {
-  flex: 1;
-  background-color: #e6d430;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.add-to-cart-btn:hover {
-  background-color: #d6c420;
-}
-
-.remove-btn {
-  background-color: #f5f5f5;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s;
-}
-
-.remove-btn:hover {
-  background-color: #ffebee;
-  color: #f44336;
-}
-
-.more-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.more-btn {
-  background-color: #e6d430;
-  border: none;
-  padding: 10px 40px;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.more-btn:hover {
-  background-color: #d6c420;
-}
-
-@media (max-width: 1024px) {
-  .books-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .books-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .books-grid {
-    grid-template-columns: 1fr;
-  }
-}
+/* Use styles from original WishListPage */
+.wishlist-page { max-width: 1200px; margin: auto; padding: 20px; }
+.page-title { text-align: center; margin-bottom: 40px; }
+.books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+.book-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; }
+.book-cover-img { width: 100%; height: 250px; object-fit: contain; cursor: pointer; margin-bottom: 10px;}
+.book-title { font-weight: bold; }
+.book-author { color: #666; font-size: 0.9em; }
+.book-actions { margin-top: 10px; }
+.remove-btn, .add-to-cart-btn { border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; }
+.remove-btn { background-color: #f5f5f5; }
+.add-to-cart-btn { background-color: #e6d430; }
 </style>

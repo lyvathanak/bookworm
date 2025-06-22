@@ -1,171 +1,77 @@
-import { reactive } from 'vue'
+import { reactive } from 'vue';
+import apiClient from '@/services/api';
+import router from '@/router';
 
 export const authStore = reactive({
   user: null,
+  token: null,
   isAuthenticated: false,
-  orders: [],
   isLoading: false,
 
-  // Initialize user data
-  initUser(userData) {
-    this.user = {
-      id: userData.id || Date.now(),
-      firstName: userData.firstName || '',
-      lastName: userData.lastName || '',
-      email: userData.email || '',
-      contact: userData.contact || '',
-      password: userData.password || '',
-      profileImage: userData.profileImage || null,
-      createdAt: userData.createdAt || new Date().toISOString(),
-      dob: userData.dob || null,
-      gender: userData.gender || '',
-      address: userData.address || {
-        recipient: '',
-        phoneNumber: '',
-        city: '',
-        detail: ''
-      }
+  loadToken() {
+    const token = localStorage.getItem('userAuthToken');
+    if (token) {
+      this.token = token;
+      this.isAuthenticated = true;
     }
-    this.isAuthenticated = true
-    this.saveToStorage()
   },
 
-  // Update user data with image handling
-  async updateUser(updates) {
-    if (!this.user) return
-    
-    try {
-      this.isLoading = true
-      
-      // Handle profile image upload
-      if (updates.profileImage && updates.profileImage instanceof File) {
-        updates.profileImage = await this.convertImageToBase64(updates.profileImage)
+  async fetchProfile() {
+      if (!this.isAuthenticated) return;
+      try {
+          const { data } = await apiClient.get('/users/profile');
+          this.user = data;
+          localStorage.setItem('user', JSON.stringify(this.user));
+      } catch (error) {
+          console.error("Failed to fetch profile:", error);
+          this.logout(); // If profile fetch fails, the token is likely invalid
       }
+  },
+  
+  async login(credentials) {
+    this.isLoading = true;
+    try {
+      const { data } = await apiClient.post('/public/auth/login', credentials);
+      this.token = data.access_token;
+      this.isAuthenticated = true;
+      localStorage.setItem('userAuthToken', this.token);
       
-      Object.assign(this.user, updates)
-      this.saveToStorage()
-      return true
+      await this.fetchProfile();
+
+      const redirectTo = router.currentRoute.value.query.redirect || '/';
+      router.push(redirectTo);
+
     } catch (error) {
-      console.error('Error updating user:', error)
-      return false
+      console.error("Login failed:", error);
+      alert('Login failed. Please check your credentials.');
     } finally {
-      this.isLoading = false
+      this.isLoading = false;
     }
   },
 
-  // Convert image file to base64
-  convertImageToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result)
-      reader.onerror = error => reject(error)
-      reader.readAsDataURL(file)
-    })
-  },
-
-  // Add order from checkout
-  addOrder(orderData) {
-    const order = {
-      id: Date.now(),
-      ...orderData,
-      orderDate: new Date().toISOString(),
-      status: 'Processing',
-      trackingNumber: 'TRK' + Math.floor(Math.random() * 1000000)
-    }
-    this.orders.unshift(order) // Add to beginning of array
-    this.saveToStorage()
-    return order
-  },
-
-  // Save to localStorage
-  saveToStorage() {
+  async register(userData) {
+    this.isLoading = true;
     try {
-      localStorage.setItem('user', JSON.stringify(this.user))
-      localStorage.setItem('orders', JSON.stringify(this.orders))
+      // The API call is the same
+      await apiClient.post('/register', userData);
+      alert('Registration successful! Please sign in.');
+      router.push({name: 'signin'});
     } catch (error) {
-      console.error('Error saving to localStorage:', error)
+      console.error("Registration failed:", error.response.data);
+      // THIS IS THE CHANGE: Display the specific error from the backend
+      const messages = error.response?.data?.message;
+      const errorMessage = Array.isArray(messages) ? messages.join(', ') : messages;
+      alert(errorMessage || 'Registration failed.');
+    } finally {
+      this.isLoading = false;
     }
   },
-
-  // Load from localStorage
-  loadFromStorage() {
-    try {
-      const savedUser = localStorage.getItem('user')
-      const savedOrders = localStorage.getItem('orders')
-      
-      if (savedUser && savedUser !== 'null') {
-        this.user = JSON.parse(savedUser)
-        this.isAuthenticated = true
-      }
-      
-      if (savedOrders) {
-        this.orders = JSON.parse(savedOrders)
-      }
-    } catch (error) {
-      console.error('Error loading from localStorage:', error)
-      this.clearStorage()
-    }
-  },
-
-  // Clear storage
-  clearStorage() {
-    localStorage.removeItem('user')
-    localStorage.removeItem('orders')
-    this.user = null
-    this.isAuthenticated = false
-    this.orders = []
-  },
-
-  // Logout
   logout() {
-    return new Promise((resolve) => {
-      this.isLoading = true
-      setTimeout(() => {
-        this.clearStorage()
-        this.isLoading = false
-        console.log('User logged out successfully')
-        resolve()
-      }, 1000) // 1-second delay
-    })
+    this.user = null;
+    this.token = null;
+    this.isAuthenticated = false;
+    localStorage.removeItem('userAuthToken');
+    localStorage.removeItem('user');
+    router.push({ name: 'signin' });
   },
-
-  // Change password
-  changePassword(passwordData) {
-    if (!this.user || !passwordData.currentPassword || !passwordData.newPassword) {
-      console.log('Password change failed. Invalid data.')
-      return false
-    }
-
-    if (this.user.password !== passwordData.currentPassword) {
-      console.log('Invalid current password.')
-      return false
-    }
-
-    if (!this.validatePassword(passwordData.newPassword)) {
-      console.log('New password does not meet requirements.')
-      return false
-    }
-
-    this.user.password = passwordData.newPassword
-    this.saveToStorage()
-    console.log('Password changed successfully')
-    return true
-  },
-
-  // Validate password strength
-  validatePassword(password) {
-    const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
-    return re.test(password)
-  },
-
-  // Get user initials for avatar placeholder
-  getUserInitials() {
-    if (!this.user) return ''
-    const first = this.user.firstName?.charAt(0) || ''
-    const last = this.user.lastName?.charAt(0) || ''
-    return `${first}${last}`.toUpperCase()
-  }
-})
-
-// Load initial state on import
-authStore.loadFromStorage()
+});

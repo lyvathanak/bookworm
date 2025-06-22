@@ -1,202 +1,97 @@
 <template>
-  <div class="author-profile">
-    <!-- Header Navigation -->
+  <div v-if="isLoading" class="loading-state">Loading author...</div>
+  <div v-else-if="author" class="author-profile">
     <div class="profile-header">
       <div class="profile-info">
-        <img :src="authorImage" alt="Author Image" class="profile-image" />
+        <img :src="author.avatar ? `http://localhost:5000/${author.avatar}` : 'https://via.placeholder.com/50'" alt="Author Image" class="profile-image" />
         <div class="profile-details">
-          <h2>{{ authorName }}</h2>
+          <h2>{{ author.author_name }}</h2>
           <button class="follow-btn">+ Follow</button>
         </div>
       </div>
-      <nav class="nav-links">
-        <router-link to="/author/james-clear" class="nav-link">Home</router-link>
-        <router-link to="/author/james-clear/books" class="nav-link active">Books</router-link>
-      </nav>
     </div>
 
-    <!-- Main Content -->
     <div class="profile-content">
-      <h1>{{ authorName }}</h1>
+      <h1>{{ author.author_name }}</h1>
       <div class="bio-section">
-        <img :src="authorBioImage" alt="Author Bio Image" class="bio-image" />
-        <p class="bio-text">
-          James Clear is a writer and speaker focused on habits, decision making, and continuous improvement. He is the author of the bestselling book <em>Atomic Habits</em>, which has sold over 20 million copies worldwide and has been translated into more than 60 languages. Clear is a regular speaker at Fortune 500 companies, and his work has been featured in Time magazine, the New York Times, the Wall Street Journal, and on CBS This Morning. His popular "3-2-1" email newsletter is sent out each week to more than 3 million subscribers.
-        </p>
-      </div>
-      <div class="social-links">
-        <a href="https://twitter.com/jamesclear" target="_blank" class="social-icon">
-          <img src="https://img.freepik.com/free-vector/new-2023-twitter-logo-x-icon-design_1017-45418.jpg?ga=GA1.1.1371575494.1717549226&semt=ais_hybrid&w=740" alt="Twitter" />
-        </a>
-        <a href="https://facebook.com/jamesclear" target="_blank" class="social-icon">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/c/cd/Facebook_logo_%28square%29.png" alt="Facebook" />
-        </a>
-        <a href="mailto:jamesclear@example.com" target="_blank" class="social-icon">
-          <img src="https://img.freepik.com/premium-vector/gmail-icon_1273375-1247.jpg?ga=GA1.1.1371575494.1717549226&semt=ais_hybrid&w=740" alt="Email" />
-        </a>
+        <img :src="author.avatar ? `http://localhost:5000/${author.avatar}` : 'https://via.placeholder.com/150'" alt="Author Bio Image" class="bio-image" />
+        <p class="bio-text">{{ author.bio || 'No biography available.' }}</p>
       </div>
     </div>
 
-    <!-- Placeholder for Books Section -->
     <div class="books-section">
-      <h2>Books</h2>
-      <!-- Add BookGrid component or similar here -->
-      <p>Book items will be displayed here. (To be implemented)</p>
+      <h2>Books by {{ author.author_name }}</h2>
+      <div v-if="author.books && author.books.length > 0" class="book-grid">
+        <div class="book-item" v-for="book in author.books" :key="book.bid">
+          <div class="book-cover" @click="goToBookDetail(book.bid)">
+            <img :src="`http://localhost:5000/${book.image}`" :alt="book.title" class="book-cover-img" />
+          </div>
+          <h3 class="book-title">{{ book.title }}</h3>
+          <p class="book-price">${{ book.price.toFixed(2) }}</p>
+        </div>
+      </div>
+      <p v-else>This author has no books listed yet.</p>
     </div>
   </div>
+  <div v-else class="loading-state">Author not found.</div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router'; // 'useRoute' has been removed
+import api from '@/services/api';
 
-// Author data
-const authorName = ref('James Clear');
-const authorImage = ref('https://www.jordanharbinger.com/wp-content/uploads/2018/10/108-james-clear-showart.jpg'); // Replace with actual image URL
-const authorBioImage = ref('https://www.jordanharbinger.com/wp-content/uploads/2018/10/108-james-clear-showart.jpg'); // Replace with actual bio image URL
+const props = defineProps({ id: String });
+const router = useRouter(); // We only need the router, not the route object
+
+const author = ref(null);
+const isLoading = ref(true);
+
+const fetchAuthor = async (authorId) => {
+  isLoading.value = true;
+  try {
+    const { data } = await api.getAuthorById(authorId);
+    author.value = data;
+  } catch (error) {
+    console.error("Failed to fetch author:", error);
+    author.value = null;
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const goToBookDetail = (bookId) => {
+  router.push({ name: 'book-description', params: { id: bookId } });
+};
+
+onMounted(() => {
+  fetchAuthor(props.id);
+});
+
+watch(() => props.id, (newId) => {
+  fetchAuthor(newId);
+});
 </script>
 
 <style scoped>
-.author-profile {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-}
-
-.profile-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #fff;
-  padding: 10px 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-}
-
-.profile-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.profile-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.profile-details h2 {
-  margin: 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.follow-btn {
-  padding: 5px 15px;
-  background: #e0e0e0;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.follow-btn:hover {
-  background: #d0d0d0;
-}
-
-.nav-links {
-  display: flex;
-  gap: 20px;
-}
-
-.nav-link {
-  text-decoration: none;
-  color: #333;
-  font-size: 16px;
-  padding-bottom: 5px;
-  border-bottom: 2px solid transparent;
-}
-
-.nav-link.active {
-  border-bottom: 2px solid #333;
-}
-
-.profile-content {
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.profile-content h1 {
-  font-size: 28px;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.bio-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.bio-image {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.bio-text {
-  max-width: 600px;
-  text-align: left;
-  color: #666;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.social-links {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.social-icon img {
-  width: 24px;
-  height: 24px;
-}
-
-.books-section {
-  padding: 20px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.books-section h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-@media (max-width: 768px) {
-  .profile-header {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .nav-links {
-    justify-content: center;
-  }
-
-  .bio-section {
-    flex-direction: column;
-    text-align: center;
-  }
-}
+/* Copied and adapted styles from the original AuthorProfile */
+.author-profile { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.profile-header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+.profile-info { display: flex; align-items: center; gap: 15px; }
+.profile-image { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+.profile-details h2 { margin: 0; font-size: 18px; }
+.follow-btn { padding: 5px 15px; background: #e0e0e0; border: none; border-radius: 5px; cursor: pointer; }
+.profile-content { background: #f9f9f9; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+.bio-section { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px; }
+.bio-image { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; }
+.bio-text { max-width: 600px; text-align: left; }
+.books-section { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.books-section h2 { margin-bottom: 20px; }
+.book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+.book-item { text-align: center; }
+.book-cover { cursor: pointer; }
+.book-cover-img { width: 100%; height: 270px; object-fit: contain; }
+.book-title { font-size: 1rem; font-weight: 600; margin: 10px 0 5px; }
+.book-price { color: #666; }
+.loading-state { text-align: center; padding: 50px; font-size: 1.2rem; }
 </style>
