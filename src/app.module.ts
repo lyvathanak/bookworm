@@ -30,21 +30,33 @@ import { Follow } from './follows/entities/follow.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
+TypeOrmModule.forRootAsync({
+  imports: [ConfigModule],
+  inject: [ConfigService],
+  useFactory: (configService: ConfigService) => {
+    const url = configService.get<string>('DATABASE_URL');
+    if (url) {
+      return {
         type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get<string>('DB_USERNAME', 'bookworm_user'),
-        password: configService.get<string>('DB_PASSWORD', 'bookworm_password'),
-        database: configService.get<string>('DB_DATABASE', 'bookworm_db'),
+        url,
         entities: [User, Book, Author, Order, OrderItem, Rating, Cart, Wishlist, Follow],
-        synchronize: true, // Should be false in production
-        ssl: configService.get<string>('DB_SSL') === 'true',
-      }),
-    }),
+        synchronize: true, // set to false in production
+        ssl: true,
+      };
+    }
+    return {
+      type: 'postgres',
+      host: configService.get<string>('DB_HOST', 'localhost'),
+      port: configService.get<number>('DB_PORT', 5432),
+      username: configService.get<string>('DB_USERNAME', 'bookworm_user'),
+      password: configService.get<string>('DB_PASSWORD', 'bookworm_password'),
+      database: configService.get<string>('DB_DATABASE', 'bookworm_db'),
+      entities: [User, Book, Author, Order, OrderItem, Rating, Cart, Wishlist, Follow],
+      synchronize: true,
+      ssl: configService.get<string>('DB_SSL') === 'true',
+    };
+  },
+}),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
