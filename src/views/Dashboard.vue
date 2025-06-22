@@ -40,32 +40,29 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '@/services/api';
-import Chart from 'chart.js/auto'; // Import Chart.js
+import Chart from 'chart.js/auto';
 
 const loading = ref(true);
 const error = ref(null);
 const stats = ref({ totalRevenue: 0, totalOrders: 0, totalUsers: 0, totalProducts: 0 });
-
-// A ref to hold the canvas element
 const salesChartCanvas = ref(null);
-// A variable to hold the chart instance so we can destroy it properly
 let salesChartInstance = null;
 
-// This function fetches all the data from the backend
 const fetchData = async () => {
     loading.value = true;
     error.value = null;
     try {
-        const [ordersRes, usersRes, booksRes] = await api.getDashboardStats();
-        stats.value = {
-            totalOrders: ordersRes.data.length,
-            totalUsers: usersRes.data.length,
-            totalProducts: booksRes.data.length,
-            totalRevenue: ordersRes.data.reduce((sum, order) => sum + order.total, 0),
-        };
-        // THIS IS THE CRITICAL STEP THAT WAS MISSING
-        // We must call the function to render the chart AFTER the data is fetched.
-        renderChart();
+        // Fetch stats and sales data concurrently
+        const [statsRes, salesRes] = await Promise.all([
+            api.getDashboardStats(),
+            api.getSalesData()
+        ]);
+        
+        stats.value = statsRes.data;
+        
+        // Pass the real sales data to the chart renderer
+        renderChart(salesRes.data);
+
     } catch (e) { 
         error.value = "Failed to load dashboard data."; 
         console.error(e);
@@ -74,23 +71,25 @@ const fetchData = async () => {
     }
 };
 
-// This function handles the logic for drawing the chart
-const renderChart = () => {
-    // If a chart already exists, destroy it before drawing a new one
+// The renderChart function now accepts data as an argument
+const renderChart = (salesData) => {
     if (salesChartInstance) {
         salesChartInstance.destroy();
     }
-    // Make sure the canvas element is available
-    if (salesChartCanvas.value) {
+    
+    if (salesChartCanvas.value && salesData) {
+        // Process the data for Chart.js
+        const labels = salesData.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        const dataPoints = salesData.map(d => parseFloat(d.sales));
+
         const ctx = salesChartCanvas.value.getContext('2d');
         salesChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                labels: labels, // Use dynamic labels
                 datasets: [{ 
                     label: 'Sales ($)', 
-                    // This is sample data, but in a real app, it would come from your API
-                    data: [1250, 1950, 3000, 5100, 4200, 7500, 6800], 
+                    data: dataPoints, // Use dynamic data
                     borderColor: '#001F3F', 
                     tension: 0.4, 
                     backgroundColor: 'rgba(0, 31, 63, 0.1)', 
@@ -105,6 +104,5 @@ const renderChart = () => {
     }
 };
 
-// Fetch data when the component is first mounted
 onMounted(fetchData);
 </script>

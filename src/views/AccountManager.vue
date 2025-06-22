@@ -89,7 +89,7 @@ const isModalOpen = ref(false);
 const isEditing = ref(false);
 const currentUser = ref({});
 
-const modalTitle = computed(() => isEditing.value ? 'Edit User Role' : 'Create New User');
+const modalTitle = computed(() => (isEditing.value ? 'Edit User Role' : 'Create New User'));
 
 const fetchData = async () => {
     loading.value = true;
@@ -127,12 +127,18 @@ const saveUser = async () => {
             await api.updateUser(currentUser.value.uid, { role: currentUser.value.role });
         } else {
             // For creating, we send the full user object
-            await api.createUser(currentUser.value); // We need to add createUser to api.js
+            await api.createUser(currentUser.value);
         }
         await fetchData(); // Refresh the list
         isModalOpen.value = false;
     } catch (e) {
-        alert('Could not save user. Please check the console for details.');
+        // --- THIS IS THE IMPROVEMENT ---
+        // Check if the error is a 409 Conflict error
+        if (e.response && e.response.status === 409) {
+            alert('Error: A user with this email address already exists.');
+        } else {
+            alert('Could not save user. Please check the console for details.');
+        }
         console.error(e);
     }
 };
