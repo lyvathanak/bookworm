@@ -11,6 +11,7 @@ export class Follow {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
+  // This line requires the 'followers' property on the Author entity
   @ManyToOne(() => Author, author => author.followers)
   @JoinColumn({ name: 'author_id' })
   author: Author;

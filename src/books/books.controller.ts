@@ -1,46 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common'; 
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard)
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() createBookDto: CreateBookDto) {
     return this.booksService.create(createBookDto);
   }
 
-  @Get()
-  findAll(@Query() query: { search?: string, genre?: string }) {
-    return this.booksService.findAll(query);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.booksService.findOne(+id);
-  }
-
-  @Get(':id/related')
-  async findRelated(@Param('id') id: string) {
-    // First, find the book to get its genre
-    const book = await this.booksService.findOne(+id);
-    if (!book || !book.genre) {
-      return []; // Return empty array if no book or genre
-    }
-    return this.booksService.findRelated(+id, book.genre);
-  }
-
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
     return this.booksService.update(+id, updateBookDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.booksService.remove(+id);
+  @Post(':id/upload-image')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('imageFile', {
+    storage: diskStorage({
+      destination: './storage/books',
+      filename: (req, file, cb) => {
+        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+        return cb(null, `${randomName}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  uploadImage(
+    @Param('id') id: string,
+    @UploadedFile(new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
+          new FileTypeValidator({ fileType: 'image' }), // Correct validator
+        ],
+    })) file: Express.Multer.File
+  ) {
+    return this.booksService.updateImage(+id, file.path);
   }
+
+
+  // Other endpoints
+  @Get()
+  findAll() { return this.booksService.findAll(); }
+  @Get(':id')
+  findOne(@Param('id') id: string) { return this.booksService.findOne(+id); }
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  remove(@Param('id') id: string) { return this.booksService.remove(+id); }
 }

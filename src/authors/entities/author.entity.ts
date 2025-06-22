@@ -1,5 +1,7 @@
+// In: src/authors/entities/author.entity.ts
+
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Book } from '../../books/entities/book.entity';
+import { Book } from '../../books/entities/book.entity'; // THIS LINE WAS MISSING
 import { Follow } from '../../follows/entities/follow.entity';
 
 @Entity('author')
@@ -14,11 +16,12 @@ export class Author {
   bio: string;
 
   @Column({ type: 'date', nullable: true })
-  dob: string; // Using string for simplicity and to avoid type issues
+  dob: string;
 
   @Column({ nullable: true })
   avatar: string;
 
+  // This relationship is required for the service to count books.
   @OneToMany(() => Book, book => book.author)
   books: Book[];
 

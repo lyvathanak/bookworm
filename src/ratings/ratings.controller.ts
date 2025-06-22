@@ -3,6 +3,7 @@ import { Controller, Get, Delete, Param, UseGuards, Patch, Body } from '@nestjs/
 import { RatingsService } from './ratings.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RatingStatus } from './entities/rating.entity'; // <-- ADD THIS IMPORT
+import { UpdateRatingStatusDto } from './dto/update-rating-status.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('ratings')
@@ -14,10 +15,10 @@ export class RatingsController {
         return this.ratingsService.findAllForAdmin();
     }
 
-    @Patch(':id/status')
-    updateStatus(@Param('id') id: string, @Body('status') status: RatingStatus) {
-        return this.ratingsService.updateStatus(+id, status);
-    }
+  @Patch(':id/status')
+  updateStatus(@Param('id') id: string, @Body() updateDto: UpdateRatingStatusDto) {
+    return this.ratingsService.updateStatus(+id, updateDto.status);
+  }
 
     @Delete(':id')
     remove(@Param('id') id: string) {

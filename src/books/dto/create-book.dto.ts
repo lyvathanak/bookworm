@@ -1,17 +1,16 @@
-import { IsString, IsNumber, IsOptional, IsInt, Length, IsEnum, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsInt, IsEnum, Min } from 'class-validator';
 
 enum BookType {
     PHYSICAL = 'Physical',
     EBOOK = 'E-book',
 }
-
 enum BookStatus {
     ACTIVE = 'Active',
     DRAFT = 'Draft',
 }
+
 export class CreateBookDto {
   @IsString()
-  @Length(1, 255)
   title: string;
 
   @IsNumber()
@@ -38,27 +37,13 @@ export class CreateBookDto {
   booktype: BookType;
   
   @IsEnum(BookStatus)
+  @IsOptional()
   status: BookStatus;
   
-  /**
-   * The ID of the author to associate with this book.
-   */
   @IsInt()
   author_id: number;
 
   @IsString()
   @IsOptional()
   isbn?: string;
-
-  @IsString()
-  @IsOptional()
-  edition_language?: string;
-
-  @IsInt()
-  @IsOptional()
-  pages?: number;
-
-  @IsString()
-  @IsOptional()
-  publisher?: string;
 }

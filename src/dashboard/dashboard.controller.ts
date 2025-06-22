@@ -11,4 +11,9 @@ export class DashboardController {
   getStats() {
     return this.dashboardService.getStats();
   }
+  
+  @Get('sales-over-time')
+  getSalesOverTime() {
+    return this.dashboardService.getSalesOverTime();
+  }
 }

@@ -1,4 +1,4 @@
-// In lyvathanak/bookworm/bookworm-backend/src/app.module.ts
+// In: src/app.module.ts
 
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -16,7 +16,9 @@ import { CartModule } from './cart/cart.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { SeederModule } from './seeder/seeder.module';
 import { PaymentModule } from './payment/payment.module';
-import { EmailModule } from './email/email.module'; // 1. Make sure EmailModule is imported
+import { EmailModule } from './email/email.module';
+import { Follow } from './follows/entities/follow.entity';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { FollowsModule } from './follows/follows.module';
 import { User } from './users/entities/user.entity';
 import { Book } from './books/entities/book.entity';
@@ -26,37 +28,35 @@ import { OrderItem } from './orders/entities/order-item.entity';
 import { Rating } from './ratings/entities/rating.entity';
 import { Cart } from './cart/entities/cart.entity';
 import { Wishlist } from './wishlist/entities/wishlist.entity';
-import { Follow } from './follows/entities/follow.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
 
-    // --- THIS IS THE UPDATED SECTION ---
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const isProduction = configService.get<string>('NODE_ENV') === 'production';
-        return {
-          type: 'postgres',
-          url: configService.get<string>('DATABASE_URL'),
-          // Use SSL only in production
-          ssl: isProduction ? { rejectUnauthorized: false } : false,
-          synchronize: true,
-          entities: [User, Book, Author, Order, OrderItem, Rating, Cart, Wishlist, Follow],
-        };
-      },
+    // 1. Use the simple, direct configuration for the database
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'bookworm_user',
+      password: 'bookworm_password',
+      database: 'bookworm_db',
+      entities: [
+        User, Book, Author, Order, OrderItem, Rating, Cart, Wishlist, Follow
+      ],
+      synchronize: true,
+      ssl: false,
     }),
-    // ------------------------------------
 
+    // 2. Use the correct async configuration for the mailer
     MailerModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
         transport: {
           host: configService.get('EMAIL_HOST'),
           port: Number(configService.get('EMAIL_PORT')),
-          secure: false,
+          secure: false, // for Ethereal
           auth: {
             user: configService.get('EMAIL_USER'),
             pass: configService.get('EMAIL_PASSWORD'),
@@ -66,9 +66,9 @@ import { Follow } from './follows/entities/follow.entity';
           from: '"Bookworm" <no-reply@bookworm.com>',
         },
       }),
-      inject: [ConfigService],
     }),
 
+    // All your feature modules
     UsersModule, 
     AuthModule, 
     BooksModule, 
@@ -81,6 +81,7 @@ import { Follow } from './follows/entities/follow.entity';
     PaymentModule, 
     EmailModule,
     FollowsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
