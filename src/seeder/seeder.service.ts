@@ -6,8 +6,8 @@ import { Author } from '../authors/entities/author.entity';
 import { Book } from '../books/entities/book.entity';
 import { Order } from '../orders/entities/order.entity';
 import { OrderItem } from '../orders/entities/order-item.entity';
-import { Rating, RatingStatus } from '../ratings/entities/rating.entity';
-import { usersData, authorsData, booksData, ratingsData } from './data';
+//import { Rating, RatingStatus } from '../ratings/entities/rating.entity';
+import { usersData, authorsData, booksData } from './data';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class SeederService {
     @InjectRepository(Book) private readonly bookRepository: Repository<Book>,
     @InjectRepository(Order) private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderItem) private readonly orderItemRepository: Repository<OrderItem>,
-    @InjectRepository(Rating) private readonly ratingRepository: Repository<Rating>,
+    //@InjectRepository(Rating) private readonly ratingRepository: Repository<Rating>,
     private readonly usersService: UsersService,
   ) {}
 
@@ -30,7 +30,7 @@ export class SeederService {
     // THIS IS THE FIX: Use a raw TRUNCATE...CASCADE query for robustness.
     // This command clears all data and handles all relationships automatically.
     await this.dataSource.query(
-      'TRUNCATE TABLE "user", "author", "book", "order", "order_item", "rating", "cart", "wishlist", "follow" RESTART IDENTITY CASCADE;',
+      'TRUNCATE TABLE "user", "author", "book", "order", "order_item", "cart", "wishlist", "follow" RESTART IDENTITY CASCADE;',
     );
     this.logger.log('All tables truncated successfully.');
 
@@ -39,7 +39,7 @@ export class SeederService {
     const createdAuthors = await this.seedAuthors();
     const createdBooks = await this.seedBooks(createdAuthors);
     await this.seedOrders(createdUsers, createdBooks);
-    await this.seedRatings(createdUsers, createdBooks);
+    //await this.seedRatings(createdUsers, createdBooks);
     
     this.logger.log('--- SEEDING COMPLETE ---');
     return { message: 'Database seeded successfully!' };
@@ -87,17 +87,17 @@ export class SeederService {
       this.logger.log('Sample orders seeded.');
   }
 
-  private async seedRatings(users: User[], books: Book[]): Promise<void> {
-    const ratingsToCreate = ratingsData.map(ratingData => {
-        const user = users.find(u => u.email === ratingData.user_email_ref);
-        const book = books.find(b => b.title === ratingData.book_title_ref);
-        if (!user || !book) return null;
-        return this.ratingRepository.create({ user, book, star: ratingData.star, status: ratingData.status });
-    }).filter(rating => rating !== null);
+  // private async seedRatings(users: User[], books: Book[]): Promise<void> {
+  //   const ratingsToCreate = ratingsData.map(ratingData => {
+  //       const user = users.find(u => u.email === ratingData.user_email_ref);
+  //       const book = books.find(b => b.title === ratingData.book_title_ref);
+  //       if (!user || !book) return null;
+  //       return this.ratingRepository.create({ user, book, star: ratingData.star, status: ratingData.status });
+  //   }).filter(rating => rating !== null);
 
-    if (ratingsToCreate.length > 0) {
-      await this.ratingRepository.save(ratingsToCreate);
-      this.logger.log(`${ratingsToCreate.length} ratings seeded.`);
-    }
-  }
+  //   if (ratingsToCreate.length > 0) {
+  //     await this.ratingRepository.save(ratingsToCreate);
+  //     this.logger.log(`${ratingsToCreate.length} ratings seeded.`);
+  //   }
+  // }
 }
