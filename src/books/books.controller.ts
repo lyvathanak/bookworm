@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -39,19 +39,21 @@ export class BooksController {
     @UploadedFile(new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
-          new FileTypeValidator({ fileType: 'image' }), // Correct validator
+          new FileTypeValidator({ fileType: 'image' }),
         ],
     })) file: Express.Multer.File
   ) {
     return this.booksService.updateImage(+id, file.path);
   }
 
-
-  // Other endpoints
   @Get()
-  findAll() { return this.booksService.findAll(); }
+  findAll(@Query('genre') genre?: string, @Query('search') search?: string) {
+    return this.booksService.findAll({ genre, search });
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) { return this.booksService.findOne(+id); }
+  
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) { return this.booksService.remove(+id); }

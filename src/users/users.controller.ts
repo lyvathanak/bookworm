@@ -8,43 +8,52 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
-@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    // req.user is populated by JwtStrategy with { userId, email }
+    return this.usersService.findOne(req.user.userId);
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('change-password')
-  @UseGuards(JwtAuthGuard) // Make sure it's protected
   changePassword(@Request() req, @Body() changePasswordDto: ChangePasswordDto) {
-    // req.user.userId comes from the JWT payload after validation
     const userId = req.user.userId; 
     return this.usersService.changePassword(userId, changePasswordDto);
   }
 
-    @Patch('avatar')
+  @UseGuards(JwtAuthGuard)
+  @Patch('avatar')
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
-      destination: './storage/avatars', // The folder to save avatars
+      destination: './storage/avatars',
       filename: (req, file, cb) => {
         const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
         return cb(null, `${randomName}${extname(file.originalname)}`);
@@ -56,17 +65,17 @@ export class UsersController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }), // 5 MB limit
-          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }), // Allow only images
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
         ],
       }),
     ) file: Express.Multer.File,
   ) {
     const userId = req.user.userId;
-    // We only need to save the path to the database
     return this.usersService.updateAvatar(userId, file.path);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);

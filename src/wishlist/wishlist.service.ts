@@ -33,12 +33,13 @@ export class WishlistService {
     return this.wishlistRepository.save(wishlistItem);
   }
 
-  getWishlistForUser(userId: number): Promise<Wishlist[]> {
-    return this.wishlistRepository.find({
-      where: { user: { uid: userId } },
-      relations: ['book'],
-    });
-  }
+getWishlistForUser(userId: number): Promise<Wishlist[]> {
+  return this.wishlistRepository.find({
+    where: { user: { uid: userId } },
+    // CORRECTED LINE:
+    relations: ['book', 'book.author'], // Now it will also load each book's author
+  });
+}
 
   async removeFromWishlist(userId: number, bookId: number): Promise<void> {
     const result = await this.wishlistRepository.delete({ user: { uid: userId }, book: { bid: bookId } });

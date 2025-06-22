@@ -26,6 +26,18 @@ export class AuthorsService {
     }));
   }
 
+  async findOne(id: number): Promise<Author> {
+    const author = await this.authorsRepository.findOne({ 
+        where: { author_id: id },
+        relations: ['books'] // Also load all books by this author
+    });
+    if (!author) {
+      throw new NotFoundException(`Author with ID ${id} not found`);
+    }
+    return author;
+  }
+
+
   async create(createAuthorDto: CreateAuthorDto): Promise<Author> {
     const author = this.authorsRepository.create(createAuthorDto);
     return this.authorsRepository.save(author);

@@ -48,6 +48,12 @@ export class AuthorsController {
   @Get()
   findAll() { return this.authorsService.findAll(); }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.authorsService.findOne(+id);
+  }
+
+
   @Delete(':id')
   remove(@Param('id') id: string) { return this.authorsService.remove(+id); }
 }

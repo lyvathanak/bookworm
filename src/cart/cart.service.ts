@@ -28,14 +28,11 @@ export class CartService {
       throw new NotFoundException('User or Book not found');
     }
 
-    // Check if the item is already in the cart
     let cartItem = await this.cartRepository.findOne({ where: { user: { uid: userId }, book: { bid: bookId } } });
 
     if (cartItem) {
-      // Update quantity if item exists
       cartItem.amount += quantity;
     } else {
-      // Create new cart item if it doesn't exist
       cartItem = this.cartRepository.create({
         user,
         book,
@@ -49,11 +46,11 @@ export class CartService {
   async getCartForUser(userId: number): Promise<Cart[]> {
     return this.cartRepository.find({
       where: { user: { uid: userId } },
-      relations: ['book'], // Also load the book details for each cart item
+      relations: ['book'],
     });
   }
   
-    async updateItemQuantity(userId: number, cartItemId: number, updateCartDto: UpdateCartDto): Promise<Cart> {
+  async updateItemQuantity(userId: number, cartItemId: number, updateCartDto: UpdateCartDto): Promise<Cart> {
     const cartItem = await this.cartRepository.findOne({ 
       where: { cart_id: cartItemId, user: { uid: userId } }
     });
@@ -67,10 +64,13 @@ export class CartService {
   }
 
   async removeItemFromCart(userId: number, cartItemId: number): Promise<void> {
-    // Ensure the item belongs to the user before deleting
     const result = await this.cartRepository.delete({ cart_id: cartItemId, user: { uid: userId } });
     if (result.affected === 0) {
       throw new NotFoundException(`Cart item with ID ${cartItemId} not found for this user`);
     }
+  }
+
+  async clearCart(userId: number): Promise<void> {
+    await this.cartRepository.delete({ user: { uid: userId } });
   }
 }

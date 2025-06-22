@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Brackets, ILike } from 'typeorm';
 import { Book } from './entities/book.entity';
 import { Author } from '../authors/entities/author.entity';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -13,10 +13,25 @@ export class BooksService {
     @InjectRepository(Author) private readonly authorsRepository: Repository<Author>,
   ) {}
 
-  async findAll(): Promise<any[]> {
-    const books = await this.booksRepository.createQueryBuilder('book')
-      .leftJoinAndSelect('book.author', 'author')
-      .getMany();
+  async findAll(options: { genre?: string, search?: string } = {}): Promise<any[]> {
+    const { genre, search } = options;
+    const query = this.booksRepository.createQueryBuilder('book')
+      .leftJoinAndSelect('book.author', 'author');
+
+    if (genre) {
+      query.where('book.genre = :genre', { genre });
+    }
+
+    if (search) {
+      const searchCondition = new Brackets(qb => {
+        qb.where('book.title ILIKE :search', { search: `%${search}%` })
+          .orWhere('author.author_name ILIKE :search', { search: `%${search}%` });
+      });
+      query.andWhere(searchCondition);
+    }
+      
+    const books = await query.getMany();
+    
     return books.map((book) => ({
       bid: book.bid, title: book.title, price: book.price, stock: book.stock, status: book.status, image: book.image, genre: book.genre, booktype: book.booktype,
       author: book.author ? { author_name: book.author.author_name, author_id: book.author.author_id } : null,
@@ -31,9 +46,7 @@ export class BooksService {
     return this.booksRepository.save(book);
   }
 
-  // --- THIS IS THE CORRECTED UPDATE METHOD ---
   async update(bid: number, updateBookDto: UpdateBookDto): Promise<Book> {
-    // Use preload to safely load the entity and merge all the new data from the DTO
     const bookToUpdate = await this.booksRepository.preload({
       bid: bid,
       ...updateBookDto
