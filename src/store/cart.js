@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import api from '@/services/api';
+import apiClient from '@/services/api';
 
 export const cartStore = reactive({
   items: [],
@@ -10,7 +10,7 @@ export const cartStore = reactive({
   },
   
   get tax() {
-    return this.subtotal * 0.10; // 10% tax
+    return this.subtotal * 0.10;
   },
 
   get total() {
@@ -20,7 +20,7 @@ export const cartStore = reactive({
   async fetchCart() {
     this.isLoading = true;
     try {
-      const { data } = await api.getCart();
+      const { data } = await apiClient.get('/cart');
       this.items = data;
     } catch (error) {
       console.error("Failed to fetch cart:", error);
@@ -33,7 +33,7 @@ export const cartStore = reactive({
   async addItem(bookId, quantity) {
     this.isLoading = true;
     try {
-      await api.addToCart({ bookId, quantity });
+      await apiClient.post('/cart/add', { bookId, quantity });
       await this.fetchCart();
       alert('Item added to cart!');
     } catch (error) {
@@ -50,7 +50,7 @@ export const cartStore = reactive({
        return;
      }
     try {
-      await api.updateCartItem(cartItemId, { quantity });
+      await apiClient.patch(`/cart/item/${cartItemId}`, { quantity });
       await this.fetchCart();
     } catch (error) {
       console.error("Failed to update cart item:", error);
@@ -59,17 +59,20 @@ export const cartStore = reactive({
 
   async removeItem(cartItemId) {
     try {
-      await api.removeCartItem(cartItemId);
+      await apiClient.delete(`/cart/item/${cartItemId}`);
       await this.fetchCart();
     } catch (error) {
       console.error("Failed to remove cart item:", error);
     }
   },
 
+  // FIX: Use the single, more efficient backend endpoint to clear the cart
   async clearCart() {
-    // To implement this, you'd need a backend endpoint like `DELETE /cart/clear`
-    for (const item of this.items) {
-      await this.removeItem(item.cart_id);
+    try {
+        await apiClient.delete('/cart/clear');
+        this.items = []; // Clear the items on the frontend immediately
+    } catch (error) {
+        console.error("Failed to clear cart:", error);
     }
   }
 });

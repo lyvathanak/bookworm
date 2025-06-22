@@ -60,18 +60,39 @@ import { authStore } from '@/store/auth';
 
 const router = useRouter();
 const searchQuery = ref('');
-const showCategories = ref(true); 
+const showCategories = ref(false);
 const isProfileOpen = ref(false);
+let categoryTimeout = null;
+
+const handleMouseEnter = () => {
+  clearTimeout(categoryTimeout);
+  showCategories.value = true;
+};
+
+const handleMouseLeave = () => {
+  categoryTimeout = setTimeout(() => {
+    showCategories.value = false;
+  }, 200);
+};
+
+const closeDropdowns = () => {
+  showCategories.value = false;
+  isProfileOpen.value = false;
+};
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
     router.push({ path: '/', query: { search: searchQuery.value.trim() } });
+  } else {
+    router.push({ path: '/' });
   }
 };
 
+// FIX: Logout handler now also redirects the user to the home page.
 const handleLogout = () => {
   isProfileOpen.value = false;
   authStore.logout();
+  router.push('/'); 
 };
 </script>
 

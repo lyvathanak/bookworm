@@ -4,10 +4,27 @@
       <img src="../assets/bookworm.png" alt="Bookworm Logo" class="logo" />
     </div>
     <form @submit.prevent="handleSignup" class="auth-form">
-      <input type="text" v-model="fname" placeholder="First Name" required />
-      <input type="text" v-model="lname" placeholder="Last Name" required />
-      <input type="email" v-model="email" placeholder="Email" required />
-      <input type="password" v-model="password" placeholder="Password" required />
+      <div class="form-group">
+        <input type="text" v-model="fname" placeholder="First Name" required />
+      </div>
+      <div class="form-group">
+        <input type="text" v-model="lname" placeholder="Last Name" required />
+      </div>
+      <div class="form-group">
+        <input type="email" v-model="email" placeholder="Email" required />
+      </div>
+      <div class="form-group password-group">
+        <input :type="passwordFieldType" v-model="password" placeholder="Password (min. 8 characters)" required />
+        <button type="button" @click="togglePasswordVisibility" class="toggle-password">
+          <i :class="['fas', passwordFieldType === 'password' ? 'fa-eye' : 'fa-eye-slash']"></i>
+        </button>
+      </div>
+      <div class="form-group password-group">
+        <input :type="confirmPasswordFieldType" v-model="confirmPassword" placeholder="Confirm Password" required />
+         <button type="button" @click="toggleConfirmPasswordVisibility" class="toggle-password">
+          <i :class="['fas', confirmPasswordFieldType === 'password' ? 'fa-eye' : 'fa-eye-slash']"></i>
+        </button>
+      </div>
       <button type="submit" class="btn-primary" :disabled="authStore.isLoading">
         {{ authStore.isLoading ? 'Creating Account...' : 'Sign Up' }}
       </button>
@@ -27,15 +44,30 @@ const fname = ref('');
 const lname = ref('');
 const email = ref('');
 const password = ref('');
+const confirmPassword = ref('');
+
+const passwordFieldType = ref('password');
+const confirmPasswordFieldType = ref('password');
+
+const togglePasswordVisibility = () => {
+  passwordFieldType.value = passwordFieldType.value === 'password' ? 'text' : 'password';
+};
+const toggleConfirmPasswordVisibility = () => {
+  confirmPasswordFieldType.value = confirmPasswordFieldType.value === 'password' ? 'text' : 'password';
+};
 
 const handleSignup = () => {
-  // --- START: Frontend Validation ---
+  // Frontend Validation
   if (!fname.value || !lname.value || !email.value || !password.value) {
     alert('Please fill in all fields.');
     return;
   }
   if (password.value.length < 8) {
     alert('Password must be at least 8 characters long.');
+    return;
+  }
+  if (password.value !== confirmPassword.value) {
+    alert('Passwords do not match.');
     return;
   }
 
@@ -45,134 +77,52 @@ const handleSignup = () => {
     email: email.value,
     password: password.value,
   };
-  // The store will now handle loading states and detailed error alerts
+  
   authStore.register(userData);
 };
 </script>
 
 <style scoped>
-.auth-container { max-width: 400px; width: 100%; padding: 2rem; }
-
-.back-button {
-  align-self: flex-start;
-  font-size: 1.5rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  margin-bottom: 1rem;
-  user-select: none;
-  padding-left: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.logo-section {
-  margin-bottom: 1rem;
+/* Styles are the same as SignIn.vue */
+.auth-container {
+  max-width: 400px;
+  width: 100%;
+  margin: auto;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
+  font-family: 'Poppins', sans-serif;
 }
-
-.logo {
-  width: 201px;
-  height: auto;
-  margin-bottom: 0.5rem;
-}
-
-.auth-form {
-  width: 100%;
-}
-
-.auth-form input,
-.auth-form select.gender-select {
+.logo-section { margin-bottom: 1rem; }
+.logo { width: 150px; }
+.auth-form { width: 100%; }
+.form-group { margin-bottom: 1rem; width: 100%; }
+.form-group input {
   width: 100%;
   padding: 12px 15px;
-  margin-bottom: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
   box-sizing: border-box;
 }
-
-.auth-form select.gender-select option[value=""][disabled] {
-  color: #999;
-}
-
-.auth-form select.gender-select:focus {
-  color: #000;
-}
-
-.auth-form input[type="date"] {
-  color: #999;
-}
-
-.auth-form input[type="date"]:focus {
-  color: #000;
-}
-
-.btn-primary {
-  background-color: #0a1e3f;
-  color: white;
-  font-weight: 700;
-  padding: 15px 0;
+.password-group { position: relative; }
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  width: 100%;
-  font-size: 1rem;
-  transition: background-color 0.3s;
+  color: #666;
 }
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #083a6b;
-}
-
-.btn-primary:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  margin: 2rem 0 1rem;
-  font-weight: 600;
-  color: #444;
-  width: 100%;
-}
-
-.divider span {
-  padding: 0 1rem;
-}
-
-.divider::before,
-.divider::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid #ccc;
-}
-
-.social-icons {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-}
-
-.social-icons img {
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-}
-
-.switch-auth {
-  margin-top: 1.5rem;
-  font-style: italic;
-  color: #555;
-}
-
-.switch-auth a {
-  font-weight: 700;
-  color: #0a1e3f;
-  text-decoration: none;
-}
+.btn-primary { background-color: #0a1e3f; color: white; padding: 15px 0; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 1rem; }
+.btn-primary:disabled { background-color: #ccc; }
+.divider { display: flex; align-items: center; margin: 2rem 0 1rem; width: 100%; color: #444; }
+.divider::before, .divider::after { content: ""; flex: 1; border-bottom: 1px solid #ccc; }
+.divider span { padding: 0 1rem; }
+.switch-auth { margin-top: 1.5rem; color: #555; }
+.switch-auth a { font-weight: 700; color: #0a1e3f; text-decoration: none; }
 </style>
