@@ -1,5 +1,7 @@
 const { defineConfig } = require('@vue/cli-service')
+
 module.exports = defineConfig({
+  publicPath: '/',
   transpileDependencies: true,
 
   // Add this section to define feature flags
