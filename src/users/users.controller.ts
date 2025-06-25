@@ -43,6 +43,13 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  updateProfile(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    const userId = req.user.userId;
+    return this.usersService.update(userId, updateUserDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch('change-password')
   changePassword(@Request() req, @Body() changePasswordDto: ChangePasswordDto) {
     const userId = req.user.userId; 
