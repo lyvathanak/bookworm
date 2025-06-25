@@ -24,7 +24,7 @@
         <div v-if="author.books && author.books.length > 0" class="book-grid">
           <div class="book-item" v-for="book in author.books" :key="book.bid">
             <div class="book-cover" @click="goToBookDetail(book.bid)">
-              <img :src="`http://localhost:5000/${book.image}`" :alt="book.title" class="book-cover-img" />
+              <img :src="`${imageUrlBase}/${book.image}`" :alt="book.title" class="book-cover-img" />
             </div>
             <h3 class="book-title">{{ book.title }}</h3>
             <p class="book-price">${{ book.price.toFixed(2) }}</p>
@@ -46,18 +46,23 @@ import { authStore } from '@/store/auth';
 const props = defineProps({ id: String });
 const router = useRouter();
 
+// FIX: Get the base URL from environment variables to prevent mixed content errors
+const imageUrlBase = process.env.VUE_APP_API_URL;
+
 const author = ref(null);
 const isLoading = ref(true);
-// ADDED: Logic for follow button
-const isFollowing = ref(false); 
+const isFollowing = ref(false);
 
 const fetchAuthor = async (authorId) => {
   isLoading.value = true;
   try {
     const { data } = await api.getAuthorById(authorId);
     author.value = data;
-    // NOTE: You would also need to check if the current user is following this author
-    // For now, isFollowing will be a placeholder state.
+    // FIX: Check if the user is following this author when the data is loaded
+    // This assumes your API returns an `is_following` field with the author details.
+    if (data.is_following) {
+        isFollowing.value = data.is_following;
+    }
   } catch (error) {
     console.error("Failed to fetch author:", error);
     author.value = null;
@@ -70,7 +75,6 @@ const goToBookDetail = (bookId) => {
   router.push({ name: 'book-description', params: { id: bookId } });
 };
 
-// ADDED: Function to handle follow/unfollow clicks
 const toggleFollow = async () => {
   if (!authStore.isAuthenticated) {
     router.push({ name: 'signin' });
@@ -87,10 +91,15 @@ const toggleFollow = async () => {
     }
   } catch (error) {
     console.error('Failed to update follow status:', error);
-    alert('Could not update follow status. Please try again.');
+    // FIX: Handle the 409 conflict gracefully
+    if (error.response && error.response.status === 409) {
+        alert("You are already following this author.");
+        isFollowing.value = true; // Correct the state if it's out of sync
+    } else {
+        alert('Could not update follow status. Please try again.');
+    }
   }
 };
-
 
 onMounted(() => {
   fetchAuthor(props.id);
@@ -102,7 +111,7 @@ watch(() => props.id, (newId) => {
 </script>
 
 <style scoped>
-/* Styles remain the same as the previous response */
+/* Styles are correct and do not need to be changed */
 :root {
   --dark-blue: #001F3F;
   --gold: #FFD700;
