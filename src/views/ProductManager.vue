@@ -62,6 +62,11 @@
             <h2 class="text-2xl font-bold text-navy mb-6">{{ modalTitle }}</h2>
             <form @submit.prevent="saveProduct" class="space-y-4">
                 <input v-model="currentProduct.title" type="text" placeholder="Book Title" class="w-full p-2 border rounded" required>
+                    <textarea
+                        v-model="currentProduct.description"
+                        placeholder="Book Description"
+                        class="w-full p-2 border rounded h-24 resize-none"
+                      ></textarea>
                 <select v-model="currentProduct.author_id" class="w-full p-2 border rounded bg-white" required>
                     <option disabled value="">Select an Author</option>
                     <option v-for="author in authors" :key="author.author_id" :value="author.author_id">{{ author.author_name }}</option>
@@ -78,8 +83,6 @@
                     <input v-model.number="currentProduct.price" type="number" step="0.01" placeholder="Price" class="w-full p-2 border rounded">
                     <input v-model.number="currentProduct.stock" type="number" placeholder="Stock" class="w-full p-2 border rounded">
                 </div>
-                
-                <!-- FIX: Changed to text input for URL -->
                 <div>
                     <label class="text-sm font-medium text-gray-700">Book Cover Image URL</label>
                     <input v-model="currentProduct.image" type="url" placeholder="https://example.com/image.jpg" class="w-full p-2 border rounded">
