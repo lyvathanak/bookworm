@@ -13,6 +13,9 @@
             by <router-link :to="`/author/${book.author.author_id}`" class="author-link">{{ book.author.author_name }}</router-link>
         </p>
         <div class="book-price">${{ book.price.toFixed(2) }}</div>
+          <div class="book-description">
+            <p>{{ book.description || 'No description available for this book.' }}</p>
+          </div>
         <div class="book-actions">
           <div class="quantity-selector">
             <button @click="quantity > 1 ? quantity-- : 1">-</button>
@@ -114,6 +117,12 @@ watch(() => props.id, (newId) => {
 .book-title { font-size: 2.2rem; margin-bottom: 0.5rem; }
 .author-link { color: #007bff; text-decoration: none; font-size: 1.1rem; }
 .book-price { font-size: 2rem; color: #e6d430; margin: 1rem 0; }
+.book-description {
+  margin: 1.5rem 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555;
+}
 .book-actions { display: flex; align-items: center; gap: 10px; }
 .quantity-selector { display: flex; border: 1px solid #ccc; }
 .quantity-selector button, .quantity-selector input { border: none; background: #fff; padding: 10px; text-align: center;}
