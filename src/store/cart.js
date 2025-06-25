@@ -37,8 +37,19 @@ export const cartStore = reactive({
       await this.fetchCart();
       alert('Item added to cart!');
     } catch (error) {
-      console.error("Failed to add to cart:", error?.response?.data?.message);
-      alert(`Could not add item to cart: ${error?.response?.data?.message}`);
+      // --- FIX: Improved Error Handling ---
+      let errorMessage = 'An unexpected error occurred.';
+      if (error.response && error.response.data && error.response.data.message) {
+        // Handle structured API errors (e.g., "Out of stock")
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        // Handle network errors or other exceptions
+        errorMessage = error.message;
+      }
+      
+      console.error("Failed to add to cart:", errorMessage);
+      alert(`Could not add item to cart: ${errorMessage}`);
+      // ------------------------------------
     } finally {
       this.isLoading = false;
     }
@@ -66,11 +77,10 @@ export const cartStore = reactive({
     }
   },
 
-  // FIX: Use the single, more efficient backend endpoint to clear the cart
   async clearCart() {
     try {
         await apiClient.delete('/cart/clear');
-        this.items = []; // Clear the items on the frontend immediately
+        this.items = [];
     } catch (error) {
         console.error("Failed to clear cart:", error);
     }
