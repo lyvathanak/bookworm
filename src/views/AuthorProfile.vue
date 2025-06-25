@@ -6,7 +6,9 @@
         <i class="fas fa-user-circle profile-icon"></i>
         <div class="profile-details">
           <h1>{{ author.author_name }}</h1>
-          <button class="follow-btn">+ Follow</button>
+          <button @click="toggleFollow" class="follow-btn">
+            {{ isFollowing ? 'Unfollow' : '+ Follow' }}
+          </button>
         </div>
       </div>
     </div>
@@ -39,19 +41,23 @@
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/services/api';
+import { authStore } from '@/store/auth';
 
 const props = defineProps({ id: String });
 const router = useRouter();
 
 const author = ref(null);
 const isLoading = ref(true);
+// ADDED: Logic for follow button
+const isFollowing = ref(false); 
 
 const fetchAuthor = async (authorId) => {
   isLoading.value = true;
   try {
-    // This API call is defined in your `api.js` file
     const { data } = await api.getAuthorById(authorId);
     author.value = data;
+    // NOTE: You would also need to check if the current user is following this author
+    // For now, isFollowing will be a placeholder state.
   } catch (error) {
     console.error("Failed to fetch author:", error);
     author.value = null;
@@ -64,6 +70,28 @@ const goToBookDetail = (bookId) => {
   router.push({ name: 'book-description', params: { id: bookId } });
 };
 
+// ADDED: Function to handle follow/unfollow clicks
+const toggleFollow = async () => {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'signin' });
+    return;
+  }
+
+  try {
+    if (isFollowing.value) {
+      await api.unfollowAuthor(props.id);
+      isFollowing.value = false;
+    } else {
+      await api.followAuthor(props.id);
+      isFollowing.value = true;
+    }
+  } catch (error) {
+    console.error('Failed to update follow status:', error);
+    alert('Could not update follow status. Please try again.');
+  }
+};
+
+
 onMounted(() => {
   fetchAuthor(props.id);
 });
@@ -74,7 +102,7 @@ watch(() => props.id, (newId) => {
 </script>
 
 <style scoped>
-/* Define color variables from user request */
+/* Styles remain the same as the previous response */
 :root {
   --dark-blue: #001F3F;
   --gold: #FFD700;
@@ -84,12 +112,11 @@ watch(() => props.id, (newId) => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0;
-  background-color: #f4f7f6; /* A neutral background */
+  background-color: #f4f7f6;
 }
 
-/* New Header Styles */
 .profile-header {
-  background-color: #001F3F; /* Dark Blue */
+  background-color: #001F3F;
   color: white;
   padding: 40px 20px;
   border-radius: 0 0 30px 30px;
@@ -106,8 +133,8 @@ watch(() => props.id, (newId) => {
 }
 
 .profile-icon {
-  font-size: 80px; /* Larger icon */
-  color: #FFD700; /* Gold */
+  font-size: 80px;
+  color: #FFD700;
   background-color: white;
   border-radius: 50%;
   padding: 10px;
@@ -122,8 +149,8 @@ watch(() => props.id, (newId) => {
 
 .follow-btn {
   padding: 10px 25px;
-  background: #FFD700; /* Gold */
-  color: #001F3F; /* Dark Blue */
+  background: #FFD700;
+  color: #001F3F;
   border: none;
   border-radius: 20px;
   cursor: pointer;
@@ -134,16 +161,14 @@ watch(() => props.id, (newId) => {
 }
 
 .follow-btn:hover {
-  background-color: #f0c400; /* Slightly darker gold */
+  background-color: #f0c400;
   transform: scale(1.05);
 }
 
-/* Main content area */
 .profile-content {
   padding: 0 20px;
 }
 
-/* Biography Section */
 .bio-section, .books-section {
   background: #ffffff;
   padding: 25px;
@@ -154,12 +179,12 @@ watch(() => props.id, (newId) => {
 
 .bio-section h2, .books-section h2 {
   font-size: 1.8rem;
-  color: #001F3F; /* Dark Blue */
+  color: #001F3F;
   margin-top: 0;
   margin-bottom: 1rem;
   text-align: center;
   padding-bottom: 10px;
-  border-bottom: 2px solid #FFD700; /* Gold */
+  border-bottom: 2px solid #FFD700;
 }
 
 .bio-text {
@@ -169,7 +194,6 @@ watch(() => props.id, (newId) => {
   text-align: center;
 }
 
-/* Books Section */
 .book-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -204,7 +228,7 @@ watch(() => props.id, (newId) => {
   font-size: 1rem;
   font-weight: 600;
   margin: 10px 0 5px;
-  color: #001F3F; /* Dark Blue */
+  color: #001F3F;
 }
 
 .book-price {
