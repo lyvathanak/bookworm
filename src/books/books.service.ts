@@ -13,11 +13,12 @@ export class BooksService {
     @InjectRepository(Author) private readonly authorsRepository: Repository<Author>,
   ) {}
 
-  // This service is now much simpler as it just passes data through.
   async findAll(options: { genre?: string, search?: string } = {}): Promise<any[]> {
     const { genre, search } = options;
     const query = this.booksRepository.createQueryBuilder('book')
-      .leftJoinAndSelect('book.author', 'author');
+      .leftJoinAndSelect('book.author', 'author')
+      // --- FIX: ADD THIS LINE TO LOAD RATINGS ---
+      .leftJoinAndSelect('book.ratings', 'rating');
 
     if (genre) {
       query.where('book.genre = :genre', { genre });
@@ -33,7 +34,15 @@ export class BooksService {
       
     return query.getMany();
   }
-
+  
+  async findOne(bid: number): Promise<Book> {
+    // --- FIX: ADD 'ratings' TO THE RELATIONS ARRAY ---
+    const book = await this.booksRepository.findOne({ where: { bid }, relations: ['author', 'ratings'] });
+    if (!book) { throw new NotFoundException(`Book with ID ${bid} not found`);}
+    return book;
+  }
+  
+  // ... (create, update, remove methods remain the same)
   async create(createBookDto: CreateBookDto): Promise<Book> {
     const { author_id, ...restOfBookData } = createBookDto;
     const author = await this.authorsRepository.findOneBy({ author_id });
@@ -58,12 +67,6 @@ export class BooksService {
     }
     
     return this.booksRepository.save(bookToUpdate);
-  }
-  
-  async findOne(bid: number): Promise<Book> {
-    const book = await this.booksRepository.findOne({ where: { bid }, relations: ['author'] });
-    if (!book) { throw new NotFoundException(`Book with ID ${bid} not found`);}
-    return book;
   }
   
   async remove(bid: number): Promise<void> {
