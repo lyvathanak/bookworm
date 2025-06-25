@@ -19,7 +19,7 @@
         </div>
         <div class="cart-item" v-for="item in cartStore.items" :key="item.cart_id">
           <div class="item-details">
-            <img :src="`http://localhost:5000/${item.book.image}`" :alt="item.book.title" class="item-image" />
+            <img :src="`${imageUrlBase}/${item.book.image}`" :alt="item.book.title" class="item-image" />
             <div class="item-info">
               <h3 class="item-title">{{ item.book.title }}</h3>
             </div>
@@ -60,6 +60,9 @@
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { cartStore } from '@/store/cart';
+
+// FIX: Get the base URL from environment variables
+const imageUrlBase = process.env.VUE_APP_API_URL;
 
 const router = useRouter();
 

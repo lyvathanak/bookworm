@@ -10,7 +10,7 @@
     <div class="book-cover" @click="goToBookDetail(book.bid)">
       <img 
         v-if="book.image"
-        :src="`http://localhost:5000/${book.image}`" 
+        :src="`${imageUrlBase}/${book.image}`" 
         :alt="book.title" 
         class="book-cover-img"
       />
@@ -48,6 +48,7 @@ const router = useRouter();
 const route = useRoute();
 const books = ref([]);
 const isLoading = ref(true);
+const imageUrlBase = process.env.VUE_APP_API_URL;
 
 const fetchBooks = async () => {
   isLoading.value = true;

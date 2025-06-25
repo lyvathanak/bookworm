@@ -1,12 +1,13 @@
 <template>
   <div class="sidebar">
     <div class="user-info">
-      <img :src="user?.avatar ? `http://localhost:5000/${user.avatar}` : 'https://via.placeholder.com/100'" alt="Avatar" class="avatar"/>
+      <img :src="user?.avatar ? `${imageUrlBase}/${user.avatar}` : 'https://via.placeholder.com/100'" alt="Avatar" class="avatar"/>
       <h4>{{ user?.fname }} {{ user?.lname }}</h4>
     </div>
     <nav class="sidebar-nav">
       <a @click="$emit('set-section', 'profile')" :class="{ active: activeSection === 'profile' }">My Profile</a>
       <a @click="$emit('set-section', 'orders')" :class="{ active: activeSection === 'orders' }">My Orders</a>
+      <a @click="$emit('set-section', 'wishlist')" :class="{ active: activeSection === 'wishlist' }">My Wishlist</a>
       <a @click="$emit('set-section', 'password')" :class="{ active: activeSection === 'password' }">Change Password</a>
       <a @click="$emit('logout')">Logout</a>
     </nav>
@@ -14,6 +15,9 @@
 </template>
 
 <script setup>
+// FIX: Get the base URL from environment variables for portability
+const imageUrlBase = process.env.VUE_APP_API_URL;
+
 defineProps({
   user: Object,
   activeSection: String,
