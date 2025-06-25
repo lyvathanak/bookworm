@@ -18,15 +18,21 @@
             <div class="nav-dropdown" v-if="showCategories">
               <div class="dropdown-column">
                 <h4 class="dropdown-header">FICTION</h4>
-                <router-link to="/?genre=Fiction" class="dropdown-link" @click="closeDropdowns">Literary Fiction</router-link>
-                <router-link to="/?genre=Mystery" class="dropdown-link" @click="closeDropdowns">Mystery & Thriller</router-link>
-                <router-link to="/?genre=Sci-Fi" class="dropdown-link" @click="closeDropdowns">Science Fiction</router-link>
+                <router-link to="/?genre=Mystery" class="dropdown-link" @click="closeDropdowns">Mystery</router-link>
+                <router-link to="/?genre=Crime" class="dropdown-link" @click="closeDropdowns">Crime</router-link>
+                <router-link to="/?genre=LGBT" class="dropdown-link" @click="closeDropdowns">LGBT</router-link>
+                <router-link to="/?genre=Romance" class="dropdown-link" @click="closeDropdowns">Romance</router-link>
+                <router-link to="/?genre=Adventure" class="dropdown-link" @click="closeDropdowns">Adventure</router-link>
+                <router-link to="/?genre=Adult" class="dropdown-link" @click="closeDropdowns">Adult</router-link>
+                <router-link to="/?genre=Suspense" class="dropdown-link" @click="closeDropdowns">Suspense</router-link>
+                <router-link to="/?genre=Contemporary" class="dropdown-link" @click="closeDropdowns">Contemporary</router-link>
               </div>
               <div class="dropdown-column">
                 <h4 class="dropdown-header">NON-FICTION</h4>
                 <router-link to="/?genre=Self-Help" class="dropdown-link" @click="closeDropdowns">Self-Help</router-link>
                 <router-link to="/?genre=Biography" class="dropdown-link" @click="closeDropdowns">Biography</router-link>
                 <router-link to="/?genre=History" class="dropdown-link" @click="closeDropdowns">History</router-link>
+                <router-link to="/?genre=Recipes" class="dropdown-link" @click="closeDropdowns">Recipe</router-link>
               </div>
             </div>
           </li>
