@@ -15,13 +15,13 @@ apiClient.interceptors.request.use((config) => {
     return config;
 }, (error) => Promise.reject(error));
 
-apiClient.interceptors.response.use((response) => response, (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('authToken');
-      window.location.href = '/#/login';
+apiClient.interceptors.request.use((config) => {
+    const token = localStorage.getItem('authToken'); 
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
-    return Promise.reject(error);
-});
+    return config;
+}, (error) => Promise.reject(error));
 
 // --- The Complete and Correct API Definition ---
 const api = {
