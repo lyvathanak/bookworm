@@ -29,7 +29,8 @@
           </div>
           <div v-else class="wishlist-grid">
             <div class="wishlist-item" v-for="item in wishlistStore.items" :key="item.wishid">
-              <img :src="`${imageUrlBase}/${item.book.image}`" :alt="item.book.title" class="wishlist-book-cover"/>
+              <img v-if="item.book.image" :src="item.book.image" :alt="item.book.title" class="wishlist-book-cover"/>
+              <div v-else class="wishlist-book-cover-placeholder">No Image</div>
               <div class="wishlist-book-details">
                 <h4 class="book-title">{{ item.book.title }}</h4>
                 <p class="book-author">{{ item.book.author.author_name }}</p>
@@ -52,17 +53,14 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authStore } from '@/store/auth';
-import { wishlistStore } from '@/store/wishlist'; // Import wishlist store
-import { cartStore } from '@/store/cart'; // Import cart store
+import { wishlistStore } from '@/store/wishlist';
+import { cartStore } from '@/store/cart';
 
 // Import child components
 import ProfileSidebar from '@/components/UserProfile/ProfileSidebar.vue';
 import MyProfile from '@/components/UserProfile/MyProfile.vue';
 import MyOrders from '@/components/UserProfile/MyOrders.vue';
 import ChangePassword from '@/components/UserProfile/ChangePassword.vue';
-
-// FIX: Get the base URL from environment variables
-const imageUrlBase = process.env.VUE_APP_API_URL;
 
 const route = useRoute();
 const router = useRouter();
@@ -97,10 +95,21 @@ onMounted(() => {
 .welcome-header { margin-top: 0; }
 .loading-state { text-align: center; padding: 50px; }
 
-/* Styles for the new wishlist section */
 .wishlist-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
 .wishlist-item { display: flex; gap: 15px; border: 1px solid #eee; padding: 10px; border-radius: 8px; }
 .wishlist-book-cover { width: 80px; height: 120px; object-fit: contain; }
+.wishlist-book-cover-placeholder {
+  width: 80px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #aaa;
+  font-size: 0.8rem;
+  text-align: center;
+  border-radius: 4px;
+}
 .wishlist-book-details { display: flex; flex-direction: column; }
 .book-title { margin: 0 0 5px; }
 .book-author { font-size: 0.9em; color: #666; margin: 0 0 10px; }

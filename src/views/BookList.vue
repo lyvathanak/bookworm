@@ -2,7 +2,7 @@
   <div class="book-list" v-if="author">
     <div class="profile-header">
       <div class="profile-info">
-        <img v-if="author.avatar" :src="`${imageUrlBase}/${author.avatar}`" alt="Author Image" class="profile-image" />
+        <img v-if="author.avatar" :src="author.avatar" alt="Author Image" class="profile-image" />
         <div v-else class="profile-image-placeholder"></div>
         <div class="profile-details">
           <h2>{{ author.author_name }}</h2>
@@ -21,21 +21,24 @@
       <h2>Books by {{ author.author_name }}</h2>
       <div v-if="isLoading" class="loading">Loading books...</div>
       <div v-else-if="author.books && author.books.length === 0" class="empty-state">
-        <p>This author has no books yet.</p>
+        <p>This author has no books listed yet.</p>
       </div>
       <div v-else class="book-grid">
         <div class="book-item" v-for="book in author.books" :key="book.bid">
           <div class="book-cover" @click="goToBookDetail(book.bid)">
-            <img v-if="book.image" :src="`${imageUrlBase}/${book.image}`" :alt="book.title" class="book-cover-img" />
-             <div v-else class="book-cover-placeholder">
-               <span>No Image</span>
-             </div>
+            <img v-if="book.image" :src="book.image" :alt="book.title" class="book-cover-img" />
+            <div v-else class="book-cover-placeholder">
+              <span>No Image</span>
+            </div>
           </div>
           <h3 class="book-title">{{ book.title }}</h3>
           <p class="book-author">{{ author.author_name }}</p>
+          
+          <!-- FIX: Corrected the property name from 'decription' to 'description' -->
           <p class="book-description">
-            {{  book.decription || 'No description available.' }}
+            {{ book.description || 'No description available.' }}
           </p>
+
           <div class="book-price-cart">
             <span class="book-price">${{ book.price.toFixed(2) }}</span>
             <button class="add-to-cart-btn" @click="handleAddToCart(book)">Add to cart</button>
@@ -62,20 +65,15 @@ const route = useRoute();
 
 const author = ref(null);
 const isLoading = ref(true);
-const isFollowing = ref(false); // Placeholder for follow status
+const isFollowing = ref(false);
 
-// Use the environment variable for the base URL of images
-const imageUrlBase = process.env.VUE_APP_API_URL;
 const authorId = computed(() => route.params.id);
 
-// Fetch author and their books from the backend
 const fetchAuthorDetails = async () => {
   isLoading.value = true;
   try {
     const { data } = await api.getAuthorById(authorId.value);
     author.value = data;
-    // Here you would also check if the current user is following this author
-    // and set isFollowing.value accordingly.
   } catch (error) {
     console.error("Failed to fetch author details:", error);
     author.value = null;
@@ -84,12 +82,10 @@ const fetchAuthorDetails = async () => {
   }
 };
 
-// Navigate to a book's detail page
 const goToBookDetail = (bookId) => {
   router.push({ name: 'book-description', params: { id: bookId } });
 };
 
-// Add a book to the cart
 const handleAddToCart = (book) => {
   if (!authStore.isAuthenticated) {
     router.push({ name: 'signin' });
@@ -107,11 +103,9 @@ const toggleFollow = async () => {
 
   try {
     if (isFollowing.value) {
-      // If currently following, call unfollow API
       await api.unfollowAuthor(authorId.value);
       isFollowing.value = false;
     } else {
-      // If not following, call follow API
       await api.followAuthor(authorId.value);
       isFollowing.value = true;
     }
@@ -126,10 +120,10 @@ onMounted(() => {
     fetchAuthorDetails();
   }
 });
-
 </script>
 
 <style scoped>
+/* FIX: Removed the unnecessary imageUrlBase variable */
 .book-list {
   max-width: 1200px;
   margin: 0 auto;
