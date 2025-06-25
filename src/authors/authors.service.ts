@@ -49,12 +49,6 @@ export class AuthorsService {
     return this.authorsRepository.save(author);
   }
 
-  async updateAvatar(authorId: number, avatarPath: string) {
-    const normalizedPath = avatarPath.replace(/\\/g, '/').replace('storage/', '');
-    await this.authorsRepository.update(authorId, { avatar: normalizedPath });
-    return { message: 'Avatar updated successfully', path: normalizedPath };
-  }
-
   async remove(id: number): Promise<void> {
     const result = await this.authorsRepository.delete(id);
     if (result.affected === 0) { throw new NotFoundException(`Author with ID ${id} not found`); }

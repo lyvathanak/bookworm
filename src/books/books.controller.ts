@@ -34,17 +34,6 @@ export class BooksController {
       },
     }),
   }))
-  uploadImage(
-    @Param('id') id: string,
-    @UploadedFile(new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
-          new FileTypeValidator({ fileType: 'image' }),
-        ],
-    })) file: Express.Multer.File
-  ) {
-    return this.booksService.updateImage(+id, file.path);
-  }
 
   @Get()
   findAll(@Query('genre') genre?: string, @Query('search') search?: string) {

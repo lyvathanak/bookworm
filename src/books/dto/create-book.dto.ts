@@ -29,10 +29,6 @@ export class CreateBookDto {
   @Min(0)
   stock: number;
   
-  @IsString()
-  @IsOptional()
-  image?: string;
-  
   @IsEnum(BookType)
   booktype: BookType;
   

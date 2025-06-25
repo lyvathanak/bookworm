@@ -29,8 +29,6 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useStaticAssets(join(__dirname, '..', 'storage'));
-
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     transform: true

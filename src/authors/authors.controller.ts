@@ -32,19 +32,7 @@ export class AuthorsController {
       },
     }),
   }))
-  uploadAvatar(
-    @Param('id') id: string,
-    @UploadedFile(new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
-          new FileTypeValidator({ fileType: 'image' }),
-        ],
-        fileIsRequired: false
-    })) file?: Express.Multer.File,
-  ) {
-    if(file) return this.authorsService.updateAvatar(+id, file.path);
-  }
-  
+
   @Get()
   findAll() { return this.authorsService.findAll(); }
 

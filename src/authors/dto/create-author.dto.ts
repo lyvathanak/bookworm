@@ -1,4 +1,4 @@
-import { IsString, IsDateString, IsOptional, IsUrl } from 'class-validator';
+import { IsString, IsOptional, IsUrl } from 'class-validator';
 
 export class CreateAuthorDto {
   @IsString()
@@ -7,8 +7,8 @@ export class CreateAuthorDto {
   @IsString()
   @IsOptional()
   bio?: string;
-  
-  @IsString() // Changed from IsDateString to match entity
+
+  @IsString()
   @IsOptional()
   dob?: string;
 

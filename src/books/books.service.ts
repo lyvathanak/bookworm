@@ -64,12 +64,6 @@ export class BooksService {
     return this.booksRepository.save(bookToUpdate);
   }
   
-  async updateImage(bookId: number, imagePath: string) {
-    const book = await this.findOne(bookId);
-    const normalizedPath = imagePath.replace(/\\/g, '/').replace('storage/', '');
-    await this.booksRepository.update(bookId, { image: normalizedPath });
-    return { message: 'Image updated successfully', path: normalizedPath };
-  }
   async findOne(bid: number): Promise<Book> {
     const book = await this.booksRepository.findOne({ where: { bid }, relations: ['author'] });
     if (!book) { throw new NotFoundException(`Book with ID ${bid} not found`);}
