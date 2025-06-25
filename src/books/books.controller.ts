@@ -34,6 +34,11 @@ export class BooksController {
       },
     }),
   }))
+  // The stray @Get() decorator that was here has been removed.
+  // The following method is for handling the POST to 'upload-image', not a GET request.
+  uploadImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    return this.booksService.update(+id, { image: file.path });
+  }
 
   @Get()
   findAll(@Query('genre') genre?: string, @Query('search') search?: string) {
