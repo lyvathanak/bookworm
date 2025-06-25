@@ -1,7 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+// Removed unused imports like FileInterceptor, diskStorage, etc.
 import { AuthorsService } from './authors.service';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
@@ -22,16 +20,7 @@ export class AuthorsController {
     return this.authorsService.update(+id, updateAuthorDto);
   }
 
-  @Post(':id/upload-avatar') // DEDICATED AVATAR UPLOAD ENDPOINT
-  @UseInterceptors(FileInterceptor('avatarFile', {
-    storage: diskStorage({
-      destination: './storage/authors',
-      filename: (req, file, cb) => {
-        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-        return cb(null, `${randomName}${extname(file.originalname)}`);
-      },
-    }),
-  }))
+  // FIX: The incomplete 'upload-avatar' endpoint has been completely removed.
 
   @Get()
   findAll() { return this.authorsService.findAll(); }
@@ -40,7 +29,6 @@ export class AuthorsController {
   findOne(@Param('id') id: string) {
     return this.authorsService.findOne(+id);
   }
-
 
   @Delete(':id')
   remove(@Param('id') id: string) { return this.authorsService.remove(+id); }

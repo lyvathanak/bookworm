@@ -1,7 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Query } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+// Removed unused imports like FileInterceptor, diskStorage, etc.
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -23,22 +21,7 @@ export class BooksController {
     return this.booksService.update(+id, updateBookDto);
   }
 
-  @Post(':id/upload-image')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('imageFile', {
-    storage: diskStorage({
-      destination: './storage/books',
-      filename: (req, file, cb) => {
-        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-        return cb(null, `${randomName}${extname(file.originalname)}`);
-      },
-    }),
-  }))
-  // The stray @Get() decorator that was here has been removed.
-  // The following method is for handling the POST to 'upload-image', not a GET request.
-  uploadImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
-    return this.booksService.update(+id, { image: file.path });
-  }
+  // FIX: The incomplete 'upload-image' endpoint has been completely removed.
 
   @Get()
   findAll(@Query('genre') genre?: string, @Query('search') search?: string) {
