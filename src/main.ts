@@ -10,18 +10,32 @@ async function bootstrap() {
 
   // --- ADDED: Run the seeder on startup ---
   const seeder = app.get(SeederService);
-  await seeder.seedAdmin(); // This ensures the admin account is created if it doesn't exist
-  // You can also run the full seed here if you want to reset all data on every start.
-  // Be careful with this in production.
-  // await seeder.seed(); 
+  await seeder.seedAdmin();
   // ----------------------------------------
 
-  app.enableCors();
+  // --- THIS IS THE FIX: Allow both of your frontend URLs ---
+  const allowedOrigins = [
+    'https://bookworm-shop.onrender.com',   //user frontend
+    'https://bookworm-1-zjwe.onrender.com', //Admin frontend
+  ];
 
-  // This serves files from the 'storage' folder in your project root
+  app.enableCors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+  // ---------------------------------------------------------
+
   app.useStaticAssets(join(__dirname, '..', 'storage'));
 
-  // This enables automatic validation and data type transformation
   app.useGlobalPipes(new ValidationPipe({ 
     whitelist: true, 
     transform: true 
