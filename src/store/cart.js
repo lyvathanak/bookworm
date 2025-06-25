@@ -1,5 +1,6 @@
 import { reactive } from 'vue';
-import apiClient from '@/services/api';
+// FIX: The import should be named 'api' to match the export from api.js
+import api from '@/services/api'; 
 
 export const cartStore = reactive({
   items: [],
@@ -20,7 +21,7 @@ export const cartStore = reactive({
   async fetchCart() {
     this.isLoading = true;
     try {
-      const { data } = await apiClient.get('/cart');
+      const { data } = await api.getCart(); // Correctly uses the api object
       this.items = data;
     } catch (error) {
       console.error("Failed to fetch cart:", error);
@@ -33,23 +34,20 @@ export const cartStore = reactive({
   async addItem(bookId, quantity) {
     this.isLoading = true;
     try {
-      await apiClient.post('/cart/add', { bookId, quantity });
+      // FIX: Use the 'addToCart' method from the 'api' service
+      await api.addToCart({ bookId, quantity });
       await this.fetchCart();
       alert('Item added to cart!');
     } catch (error) {
-      // --- FIX: Improved Error Handling ---
       let errorMessage = 'An unexpected error occurred.';
       if (error.response && error.response.data && error.response.data.message) {
-        // Handle structured API errors (e.g., "Out of stock")
         errorMessage = error.response.data.message;
       } else if (error.message) {
-        // Handle network errors or other exceptions
         errorMessage = error.message;
       }
       
       console.error("Failed to add to cart:", errorMessage);
       alert(`Could not add item to cart: ${errorMessage}`);
-      // ------------------------------------
     } finally {
       this.isLoading = false;
     }
@@ -61,7 +59,8 @@ export const cartStore = reactive({
        return;
      }
     try {
-      await apiClient.patch(`/cart/item/${cartItemId}`, { quantity });
+      // Correctly uses the api object
+      await api.updateCartItem(cartItemId, { quantity });
       await this.fetchCart();
     } catch (error) {
       console.error("Failed to update cart item:", error);
@@ -70,7 +69,8 @@ export const cartStore = reactive({
 
   async removeItem(cartItemId) {
     try {
-      await apiClient.delete(`/cart/item/${cartItemId}`);
+      // Correctly uses the api object
+      await api.removeCartItem(cartItemId);
       await this.fetchCart();
     } catch (error) {
       console.error("Failed to remove cart item:", error);
@@ -79,7 +79,8 @@ export const cartStore = reactive({
 
   async clearCart() {
     try {
-        await apiClient.delete('/cart/clear');
+        // Correctly uses the api object
+        await api.clearCart();
         this.items = [];
     } catch (error) {
         console.error("Failed to clear cart:", error);
