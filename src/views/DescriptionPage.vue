@@ -10,8 +10,12 @@
       <div class="book-info">
         <h1 class="book-title">{{ book.title }}</h1>
         <p v-if="book.author">
-            by <router-link :to="`/author/${book.author.author_id}`" class="author-link">{{ book.author.author_name }}</router-link>
+          by <router-link :to="`/author/${book.author.author_id}`" class="author-link">{{ book.author.author_name }}</router-link>
         </p>
+        <div v-if="averageRating" class="star-rating">
+          <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= averageRating }">&#9733;</span>
+          <span class="average-rating-text">{{ averageRating.toFixed(1) }} out of 5</span>
+        </div>
         <div class="book-price">${{ book.price.toFixed(2) }}</div>
           <div class="book-description">
             <p>{{ book.description || 'No description available for this book.' }}</p>
@@ -24,7 +28,7 @@
           </div>
           <button class="add-to-cart-btn" @click="handleAddToCart">ADD TO CART</button>
           <button class="wishlist-btn" @click="handleToggleWishlist" :class="{ active: isWishlisted }">
-             <i class="fas fa-heart"></i>
+            <i class="fas fa-heart"></i>
           </button>
         </div>
       </div>
@@ -61,6 +65,14 @@ const quantity = ref(1);
 const isWishlisted = computed(() => {
   if (!book.value) return false;
   return wishlistStore.items.some(item => item.book.bid === book.value.bid);
+});
+
+const averageRating = computed(() => {
+  if (!book.value || !book.value.ratings || book.value.ratings.length === 0) {
+    return 0;
+  }
+  const total = book.value.ratings.reduce((acc, rating) => acc + rating.star, 0);
+  return total / book.value.ratings.length;
 });
 
 const fetchBook = async (id) => {
@@ -132,4 +144,23 @@ watch(() => props.id, (newId) => {
 .wishlist-btn { background: #eee; }
 .wishlist-btn.active { background-color: #e6d430; color: #fff;}
 .book-details-section { margin-top: 40px; }
+.star-rating {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.star {
+  color: #ccc;
+  font-size: 1.5rem;
+}
+
+.star.filled {
+  color: #fdd835;
+}
+
+.average-rating-text {
+  margin-left: 10px;
+  font-size: 1.1rem;
+  color: #555;
+}
 </style>

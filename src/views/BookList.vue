@@ -33,8 +33,11 @@
           </div>
           <h3 class="book-title">{{ book.title }}</h3>
           <p class="book-author">{{ author.author_name }}</p>
-          
-          <!-- FIX: Corrected the property name from 'decription' to 'description' -->
+
+          <div class="book-rating">
+            <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= getAverageRating(book) }">&#9733;</span>
+          </div>
+
           <p class="book-description">
             {{ book.description || 'No description available.' }}
           </p>
@@ -56,7 +59,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import api from '@/services/api'; 
+import api from '@/services/api';
 import { cartStore } from '@/store/cart';
 import { authStore } from '@/store/auth';
 
@@ -80,6 +83,14 @@ const fetchAuthorDetails = async () => {
   } finally {
     isLoading.value = false;
   }
+};
+
+const getAverageRating = (book) => {
+  if (!book.ratings || book.ratings.length === 0) {
+    return 0;
+  }
+  const total = book.ratings.reduce((acc, rating) => acc + rating.star, 0);
+  return total / book.ratings.length;
 };
 
 const goToBookDetail = (bookId) => {
@@ -123,7 +134,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* FIX: Removed the unnecessary imageUrlBase variable */
 .book-list {
   max-width: 1200px;
   margin: 0 auto;
@@ -273,6 +283,14 @@ onMounted(() => {
 }
 .book-rating {
   margin-bottom: 10px;
+}
+.star {
+  color: #ccc;
+  font-size: 1rem;
+}
+
+.star.filled {
+  color: #fdd835;
 }
 .book-price-cart {
   display: flex;
