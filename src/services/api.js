@@ -41,6 +41,8 @@ export default {
 
   // --- Authors ---
   getAuthorById: (id) => apiClient.get(`/authors/${id}`),
+  followAuthor: (authorId) => apiClient.post(`/authors/${authorId}/follow`),
+  unfollowAuthor: (authorId) => apiClient.delete(`/authors/${authorId}/unfollow`),
 
   // --- Wishlist ---
   getWishlist: () => apiClient.get('/wishlist'),
