@@ -128,10 +128,10 @@ onMounted(() => {
 
 <style scoped>
 .book-list {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
 }
 .loading, .empty-state {
   text-align: center;
@@ -140,25 +140,25 @@ onMounted(() => {
   color: #666;
 }
 .profile-header {
-   display: flex;
-   justify-content: space-between;
-   align-items: center;
-   background: #fff;
-   padding: 10px 20px;
-   border-radius: 10px;
-   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-   margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
 }
 .profile-info {
-   display: flex;
-   align-items: center;
-   gap: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 .profile-image {
-   width: 50px;
-   height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 .profile-image-placeholder {
   width: 50px;
@@ -167,78 +167,78 @@ onMounted(() => {
   background-color: #f0f0f0;
 }
 .profile-details h2 {
-  margin: 0;
-  font-size: 18px;
-  color: #333;
+  margin: 0;
+  font-size: 18px;
+  color: #333;
 }
 .follow-btn {
-  padding: 5px 15px;
-  background: #e0e0e0;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
+  padding: 5px 15px;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
 }
 .follow-btn.is-following {
   background-color: #d0d0d0;
 }
 .follow-btn:hover {
-  background: #d0d0d0;
+  background: #d0d0d0;
 }
 .nav-links {
-  display: flex;
-  gap: 20px;
+  display: flex;
+  gap: 20px;
 }
 .nav-link {
-  text-decoration: none;
-  color: #333;
-  font-size: 16px;
-  padding-bottom: 5px;
-  border-bottom: 2px solid transparent;
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid transparent;
 }
 .nav-link.active {
-  border-bottom: 2px solid #333;
+  border-bottom: 2px solid #333;
 }
 .books-section {
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-.books-section h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #333;
-  text-align: center;
+.books-section h2 { 
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
 }
 .book-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
 }
 .book-item {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 15px;
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 15px;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 .book-cover {
-  width: 100%;
-  height: 300px;
-  margin-bottom: 15px;
-  border-radius: 4px;
-  overflow: hidden;
-  cursor: pointer;
+  width: 100%;
+  height: 300px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
 }
 .book-cover-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .book-cover-placeholder {
   width: 100%;
@@ -252,54 +252,54 @@ onMounted(() => {
   border-radius: 4px;
 }
 .book-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 0 0 5px 0;
-  color: #333;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 5px 0;
+  color: #333;
 }
 .book-author {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 10px 0;
 }
 .book-rating {
-  margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 .book-price-cart {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
 }
 .book-price {
-  font-weight: bold;
-  color: #333;
+  font-weight: bold;
+  color: #333;
 }
 .add-to-cart-btn {
-  background-color: #e6d430;
-  color: #333;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
+  background-color: #e6d430;
+  color: #333;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
 }
 .add-to-cart-btn:hover {
-  background-color: #d6c420;
+  background-color: #d6c420;
 }
 @media (max-width: 1024px) {
-  .book-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  .book-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 @media (max-width: 768px) {
-  .book-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .book-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 @media (max-width: 480px) {
-  .book-grid {
-    grid-template-columns: 1fr;
-  }
+  .book-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
