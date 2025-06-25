@@ -32,6 +32,10 @@ export default {
   getBooks: (params) => apiClient.get('/books', { params }),
   getBookById: (id) => apiClient.get(`/books/${id}`),
 
+  // --- Ratings ---
+  getBookRatings: (bookId) => apiClient.get(`/books/${bookId}/ratings`),
+  createRating: (bookId, ratingData) => apiClient.post(`/books/${bookId}/ratings`, ratingData),
+
   // --- Cart ---
   getCart: () => apiClient.get('/cart'),
   addToCart: (data) => apiClient.post('/cart/add', data),

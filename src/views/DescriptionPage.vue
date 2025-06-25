@@ -12,10 +12,13 @@
         <p v-if="book.author">
           by <router-link :to="`/author/${book.author.author_id}`" class="author-link">{{ book.author.author_name }}</router-link>
         </p>
-        <div v-if="averageRating" class="star-rating">
+
+        <div v-if="book.ratings" class="star-rating">
           <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= averageRating }">&#9733;</span>
-          <span class="average-rating-text">{{ averageRating.toFixed(1) }} out of 5</span>
+          <span v-if="averageRating > 0" class="average-rating-text">{{ averageRating.toFixed(1) }} out of 5</span>
+          <span v-else class="average-rating-text">No ratings yet</span>
         </div>
+
         <div class="book-price">${{ book.price.toFixed(2) }}</div>
           <div class="book-description">
             <p>{{ book.description || 'No description available for this book.' }}</p>
