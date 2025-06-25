@@ -6,14 +6,13 @@ import { join } from 'path';
 import { SeederService } from './seeder/seeder.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    hostname: '0.0.0.0',
+  });
 
-  // --- ADDED: Run the seeder on startup ---
   const seeder = app.get(SeederService);
   await seeder.seedAdmin();
-  // ----------------------------------------
 
-  // --- THIS IS THE FIX: Allow both of your frontend URLs ---
   const allowedOrigins = [
     'https://bookworm-shop.onrender.com',   //user frontend
     'https://bookworm-1-zjwe.onrender.com', //Admin frontend
@@ -41,7 +40,7 @@ async function bootstrap() {
     transform: true 
   }));
 
-await app.listen(5000, '0.0.0.0'); 
+await app.listen(5000); 
 
 console.log(`Application is running on: ${await app.getUrl()}`);
 }
