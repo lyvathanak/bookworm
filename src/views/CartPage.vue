@@ -19,7 +19,8 @@
         </div>
         <div class="cart-item" v-for="item in cartStore.items" :key="item.cart_id">
           <div class="item-details">
-            <img :src="`${imageUrlBase}/${item.book.image}`" :alt="item.book.title" class="item-image" />
+            <img v-if="item.book.image" :src="`${imageUrlBase}/${item.book.image}`" :alt="item.book.title" class="item-image" />
+            <div v-else class="item-image-placeholder">No Image</div>
             <div class="item-info">
               <h3 class="item-title">{{ item.book.title }}</h3>
             </div>
@@ -81,7 +82,6 @@ const confirmRemoveItem = (cartItemId) => {
 </script>
 
 <style scoped>
-/* Use existing styles from the original CartPage.vue */
 .cart-page { max-width: 900px; margin: auto; padding: 20px; }
 .cart-container { background: #fff; padding: 20px; border-radius: 8px; }
 .breadcrumb { margin-bottom: 20px; }
@@ -93,6 +93,18 @@ h1 { text-align: center; margin-bottom: 20px; }
 .cart-item { display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 40px; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
 .item-details { display: flex; align-items: center; gap: 15px; }
 .item-image { width: 60px; height: 90px; object-fit: contain; }
+.item-image-placeholder {
+  width: 60px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #aaa;
+  font-size: 0.8rem;
+  text-align: center;
+  border-radius: 4px;
+}
 .item-quantity { display: flex; align-items: center; justify-content: center; }
 .item-price, .item-total { text-align: center; }
 .remove-btn { background: none; border: none; cursor: pointer; color: #999; }

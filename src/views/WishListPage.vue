@@ -7,7 +7,10 @@
     </div>
     <div v-else class="books-grid">
       <div class="book-item" v-for="item in wishlistStore.items" :key="item.wishid">
-        <img :src="`http://localhost:5000/${item.book.image}`" :alt="item.book.title" class="book-cover-img" @click="goToBookDetail(item.book.bid)"/>
+        <div class="book-cover-container" @click="goToBookDetail(item.book.bid)">
+          <img v-if="item.book.image" :src="`${imageUrlBase}/${item.book.image}`" :alt="item.book.title" class="book-cover-img"/>
+          <div v-else class="book-cover-placeholder">No Image</div>
+        </div>
         <h3 class="book-title">{{ item.book.title }}</h3>
         <p class="book-author">{{ item.book.author.author_name }}</p>
         <div class="book-actions">
@@ -27,6 +30,7 @@ import { wishlistStore } from '@/store/wishlist';
 import { cartStore } from '@/store/cart';
 
 const router = useRouter();
+const imageUrlBase = process.env.VUE_APP_API_URL;
 
 onMounted(() => {
   wishlistStore.fetchWishlist();
@@ -38,12 +42,23 @@ const goToBookDetail = (bookId) => {
 </script>
 
 <style scoped>
-/* Use styles from original WishListPage */
 .wishlist-page { max-width: 1200px; margin: auto; padding: 20px; }
 .page-title { text-align: center; margin-bottom: 40px; }
 .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
 .book-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; }
-.book-cover-img { width: 100%; height: 250px; object-fit: contain; cursor: pointer; margin-bottom: 10px;}
+.book-cover-container { cursor: pointer; margin-bottom: 10px; }
+.book-cover-img { width: 100%; height: 250px; object-fit: contain; }
+.book-cover-placeholder {
+  width: 100%;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #aaa;
+  font-size: 0.9rem;
+  border-radius: 4px;
+}
 .book-title { font-weight: bold; }
 .book-author { color: #666; font-size: 0.9em; }
 .book-actions { margin-top: 10px; }
