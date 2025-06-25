@@ -33,6 +33,9 @@
           </div>
           <h3 class="book-title">{{ book.title }}</h3>
           <p class="book-author">{{ author.author_name }}</p>
+          <p class="book-description">
+            {{  book.decription || 'No description available.' }}
+          </p>
           <div class="book-price-cart">
             <span class="book-price">${{ book.price.toFixed(2) }}</span>
             <button class="add-to-cart-btn" @click="handleAddToCart(book)">Add to cart</button>
@@ -50,7 +53,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import api from '@/services/api'; // Assuming you have this service
+import api from '@/services/api'; 
 import { cartStore } from '@/store/cart';
 import { authStore } from '@/store/auth';
 
@@ -261,6 +264,18 @@ onMounted(() => {
   font-size: 14px;
   color: #666;
   margin: 0 0 10px 0;
+}
+.book-description {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  height: 3.6em; /* Limit height to 2 lines */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 .book-rating {
   margin-bottom: 10px;
