@@ -26,9 +26,11 @@
         >
           <p class="book-author">{{ book.author.author_name }}</p>
         </router-link>
+        
         <div class="book-rating">
           <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= getAverageRating(book) }">&#9733;</span>
         </div>
+
         <div class="book-price-cart">
           <span class="book-price">${{ book.price.toFixed(2) }}</span>
           <button class="add-to-cart-btn" @click="addToCart(book)">
@@ -72,6 +74,7 @@ const fetchBooks = async () => {
   }
 };
 
+// FUNCTION TO CALCULATE AVERAGE RATING
 const getAverageRating = (book) => {
   if (!book.ratings || book.ratings.length === 0) {
     return 0;
@@ -79,6 +82,7 @@ const getAverageRating = (book) => {
   const total = book.ratings.reduce((acc, rating) => acc + rating.star, 0);
   return total / book.ratings.length;
 };
+
 
 onMounted(fetchBooks);
 watch(() => [route.query.search, route.query.genre], fetchBooks);
@@ -165,6 +169,8 @@ const addToCart = (book) => {
 .book-author:hover {
   color: #000;
 }
+
+/* RATING STYLES */
 .book-rating {
   margin-bottom: 10px;
 }
@@ -175,6 +181,7 @@ const addToCart = (book) => {
 .star.filled {
   color: #fdd835;
 }
+
 .book-price-cart {
   display: flex;
   justify-content: space-between;
