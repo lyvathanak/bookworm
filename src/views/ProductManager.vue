@@ -30,7 +30,7 @@
         <tbody>
           <tr v-for="product in products" :key="product.bid" class="border-b hover:bg-gray-50">
             <td class="p-2 flex items-center gap-4">
-              <img :src="getImageUrl(product.image)" onerror="this.src='https://placehold.co/48x72/ccc/ffffff?text=N/A'" class="w-12 h-[72px] object-cover rounded-md shadow" />
+              <img :src="product.image || 'https://placehold.co/48x72/ccc/ffffff?text=N/A'" onerror="this.src='https://placehold.co/48x72/ccc/ffffff?text=N/A'" class="w-12 h-[72px] object-cover rounded-md shadow" />
               <div>
                 <p class="font-semibold text-navy">{{ product.title }}</p>
                 <p class="text-xs text-gray-500">{{ product.genre }}</p>
@@ -62,11 +62,14 @@
             <h2 class="text-2xl font-bold text-navy mb-6">{{ modalTitle }}</h2>
             <form @submit.prevent="saveProduct" class="space-y-4">
                 <input v-model="currentProduct.title" type="text" placeholder="Book Title" class="w-full p-2 border rounded" required>
-                    <textarea
-                        v-model="currentProduct.description"
-                        placeholder="Book Description"
-                        class="w-full p-2 border rounded h-24 resize-none"
-                      ></textarea>
+                
+                <!-- FIX: Added textarea for the description -->
+                <textarea
+                    v-model="currentProduct.description"
+                    placeholder="Book Description"
+                    class="w-full p-2 border rounded h-24 resize-none"
+                  ></textarea>
+
                 <select v-model="currentProduct.author_id" class="w-full p-2 border rounded bg-white" required>
                     <option disabled value="">Select an Author</option>
                     <option v-for="author in authors" :key="author.author_id" :value="author.author_id">{{ author.author_name }}</option>
@@ -83,6 +86,8 @@
                     <input v-model.number="currentProduct.price" type="number" step="0.01" placeholder="Price" class="w-full p-2 border rounded">
                     <input v-model.number="currentProduct.stock" type="number" placeholder="Stock" class="w-full p-2 border rounded">
                 </div>
+                
+                <!-- FIX: Changed file input to text input for image URL -->
                 <div>
                     <label class="text-sm font-medium text-gray-700">Book Cover Image URL</label>
                     <input v-model="currentProduct.image" type="url" placeholder="https://example.com/image.jpg" class="w-full p-2 border rounded">
@@ -99,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'; // <-- FIX: Added this import
+import { ref, onMounted, computed } from 'vue';
 import api from '@/services/api';
 import { Plus, FilePenLine, Trash2 } from 'lucide-vue-next';
 
@@ -113,11 +118,10 @@ const currentProduct = ref({});
 
 const modalTitle = computed(() => (isEditing.value ? 'Edit Book' : 'Add New Book'));
 
+// This function is no longer needed since we expect full URLs from the database.
+// The template directly binds to `product.image`.
 const getImageUrl = (imagePath) => {
-    if (!imagePath || imagePath.startsWith('http')) {
-        return imagePath || 'https://placehold.co/48x72/ccc/ffffff?text=N/A';
-    }
-    return `http://localhost:5000/${imagePath}`;
+    return imagePath || 'https://placehold.co/48x72/ccc/ffffff?text=N/A';
 };
 
 const fetchData = async () => {
@@ -142,7 +146,17 @@ onMounted(fetchData);
 
 const openAddModal = () => {
     isEditing.value = false;
-    currentProduct.value = { price: 0, stock: 0, author_id: null, booktype: 'Physical', status: 'Active' };
+    // FIX: Initialize all fields, including description and image
+    currentProduct.value = { 
+        title: '',
+        description: '',
+        image: '',
+        price: 0, 
+        stock: 0, 
+        author_id: null, 
+        booktype: 'Physical', 
+        status: 'Active' 
+    };
     isModalOpen.value = true;
 };
 
@@ -153,7 +167,6 @@ const openEditModal = (p) => {
     isModalOpen.value = true;
 };
 
-// FIX: Simplified saveProduct for URL-based images
 const saveProduct = async () => {
     try {
         if (isEditing.value) {
