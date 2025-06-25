@@ -41,7 +41,8 @@ async function bootstrap() {
     transform: true 
   }));
 
-  await app.listen(5000, '0.0.0.0'); 
-  console.log(`Application is running on: ${await app.getUrl()}`);
+await app.listen(5000, '0.0.0.0'); 
+
+console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
