@@ -32,8 +32,20 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
   
+  /**
+   * Finds a user by email and ensures the password field is selected.
+   * This is critical for authentication.
+   * @param email The user's email.
+   * @returns The user object with the password, or null if not found.
+   */
   async findOneByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { email } });
+    // FIX: Use the query builder to explicitly select the password field.
+    // This guarantees that the password hash is available for comparison in the AuthService.
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.email = :email', { email })
+      .addSelect('user.password')
+      .getOne();
   }
 
   async changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<void> {
