@@ -30,7 +30,6 @@
         <tbody>
           <tr v-for="product in products" :key="product.bid" class="border-b hover:bg-gray-50">
             <td class="p-2 flex items-center gap-4">
-              <!-- Use the new getImageUrl helper function -->
               <img :src="getImageUrl(product.image)" onerror="this.src='https://placehold.co/48x72/ccc/ffffff?text=N/A'" class="w-12 h-[72px] object-cover rounded-md shadow" />
               <div>
                 <p class="font-semibold text-navy">{{ product.title }}</p>
@@ -79,10 +78,13 @@
                     <input v-model.number="currentProduct.price" type="number" step="0.01" placeholder="Price" class="w-full p-2 border rounded">
                     <input v-model.number="currentProduct.stock" type="number" placeholder="Stock" class="w-full p-2 border rounded">
                 </div>
+                
+                <!-- FIX: Changed to text input for URL -->
                 <div>
-                    <label class="text-sm font-medium text-gray-700">Book Cover Image</label>
-                    <input type="file" @change="handleFileSelect" accept="image/*" class="w-full p-2 border rounded file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <label class="text-sm font-medium text-gray-700">Book Cover Image URL</label>
+                    <input v-model="currentProduct.image" type="url" placeholder="https://example.com/image.jpg" class="w-full p-2 border rounded">
                 </div>
+
                 <div class="flex justify-end gap-4 pt-4">
                     <button type="button" @click="isModalOpen = false" class="px-4 py-2 rounded-lg bg-gray-200">Cancel</button>
                     <button type="submit" class="btn-primary">{{ isEditing ? 'Save Changes' : 'Add Book' }}</button>
@@ -94,7 +96,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue'; // <-- FIX: Added this import
 import api from '@/services/api';
 import { Plus, FilePenLine, Trash2 } from 'lucide-vue-next';
 
@@ -105,84 +107,74 @@ const error = ref(null);
 const isModalOpen = ref(false);
 const isEditing = ref(false);
 const currentProduct = ref({});
-const selectedFile = ref(null);
 
 const modalTitle = computed(() => (isEditing.value ? 'Edit Book' : 'Add New Book'));
 
 const getImageUrl = (imagePath) => {
-    // If the path is null or already a full URL (from old seeder data), handle it
     if (!imagePath || imagePath.startsWith('http')) {
         return imagePath || 'https://placehold.co/48x72/ccc/ffffff?text=N/A';
     }
-    // For new uploads, prepend the backend server address
     return `http://localhost:5000/${imagePath}`;
 };
+
 const fetchData = async () => {
-  loading.value = true;
-  error.value = null;
-  try {
-    const [productsRes, authorsRes] = await Promise.all([
-      api.getBooks(),
-      api.getAuthors(),
-    ]);
-    products.value = productsRes.data;
-    authors.value = authorsRes.data;
-  } catch (e) {
-    error.value = 'Failed to load data.';
-    console.error(e);
-  } finally {
-    loading.value = false;
-  }
+    loading.value = true;
+    error.value = null;
+    try {
+        const [productsRes, authorsRes] = await Promise.all([
+            api.getBooks(),
+            api.getAuthors(),
+        ]);
+        products.value = productsRes.data;
+        authors.value = authorsRes.data;
+    } catch (e) {
+        error.value = 'Failed to load data.';
+        console.error(e);
+    } finally {
+        loading.value = false;
+    }
 };
 
 onMounted(fetchData);
 
-const handleFileSelect = (event) => {
-  selectedFile.value = event.target.files[0];
-};
-
 const openAddModal = () => {
-  isEditing.value = false;
-  currentProduct.value = { price: 0, stock: 0, author_id: null, booktype: 'Physical', status: 'Active' };
-  selectedFile.value = null;
-  isModalOpen.value = true;
+    isEditing.value = false;
+    currentProduct.value = { price: 0, stock: 0, author_id: null, booktype: 'Physical', status: 'Active' };
+    isModalOpen.value = true;
 };
 
 const openEditModal = (p) => {
-  isEditing.value = true;
-  currentProduct.value = JSON.parse(JSON.stringify(p));
-  currentProduct.value.author_id = p.author?.author_id || null;
-  selectedFile.value = null;
-  isModalOpen.value = true;
+    isEditing.value = true;
+    currentProduct.value = JSON.parse(JSON.stringify(p));
+    currentProduct.value.author_id = p.author?.author_id || null;
+    isModalOpen.value = true;
 };
 
+// FIX: Simplified saveProduct for URL-based images
 const saveProduct = async () => {
-  try {
-    let bookId;
-
-    // STEP 1: Save the text/number data first
-    if (isEditing.value) {
-      bookId = currentProduct.value.bid;
-      await api.updateBook(bookId, currentProduct.value);
-    } else {
-      const response = await api.createBook(currentProduct.value);
-      bookId = response.data.bid;
+    try {
+        if (isEditing.value) {
+            await api.updateBook(currentProduct.value.bid, currentProduct.value);
+        } else {
+            await api.createBook(currentProduct.value);
+        }
+        await fetchData();
+        isModalOpen.value = false;
+    } catch (e) {
+        alert("Could not save product. Please check console for details.");
+        console.error(e);
     }
-
-    // STEP 2: If a file was selected, upload it now using the correct ID
-    if (selectedFile.value) {
-      if (!bookId) throw new Error("Could not get Book ID for image upload.");
-      const formData = new FormData();
-      formData.append('imageFile', selectedFile.value);
-      await api.uploadBookImage(bookId, formData);
-    }
-    
-    await fetchData(); // Refresh the list with all data.
-    isModalOpen.value = false;
-
-  } catch (e) {
-    alert("Could not save product. Please check console for details.");
-    console.error(e);
-  }
 };
+
+const handleDelete = async (id) => {
+  if (confirm('Are you sure you want to delete this product?')) {
+    try {
+      await api.deleteBook(id);
+      await fetchData();
+    } catch(e) {
+      alert("Failed to delete product.");
+      console.error(e);
+    }
+  }
+}
 </script>

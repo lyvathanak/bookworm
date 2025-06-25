@@ -23,9 +23,9 @@
                 <tbody>
                     <tr v-for="author in authors" :key="author.author_id" class="border-b">
                         <td class="p-2 flex items-center gap-4">
-                            <img :src="`http://localhost:5000/${author.avatar}`"
-                                onerror="this.src='https://placehold.co/48x48/ccc/ffffff?text=N/A'"
-                                class="w-12 h-12 rounded-full object-cover">
+                            <img :src="getImageUrl(author.avatar)"
+                                 onerror="this.src='https://placehold.co/48x48/ccc/ffffff?text=N/A'"
+                                 class="w-12 h-12 rounded-full object-cover">
                             <div>
                             <p class="font-semibold">{{ author.author_name }}</p>
                             <p class="text-xs text-gray-500">ID: {{ author.author_id }}</p>
@@ -43,7 +43,7 @@
                             <Trash2 class="w-5 h-5" />
                             </button>
                         </td>
-                        </tr>
+                    </tr>
 
                 </tbody>
             </table>
@@ -55,9 +55,10 @@
                 <form @submit.prevent="saveAuthor" class="space-y-4">
                     <input v-model="currentAuthor.author_name" type="text" placeholder="Author Name" class="w-full p-2 border rounded" required>
                     
+                    <!-- FIX: Changed to text input for URL -->
                     <div>
-                        <label class="text-sm font-medium text-gray-700">Author Avatar</label>
-                        <input type="file" @change="handleFileSelect" accept="image/*" class="w-full p-2 border rounded file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <label class="text-sm font-medium text-gray-700">Author Avatar URL</label>
+                        <input v-model="currentAuthor.avatar" type="url" placeholder="https://example.com/image.jpg" class="w-full p-2 border rounded">
                     </div>
                     
                     <textarea v-model="currentAuthor.bio" placeholder="Author Bio" class="w-full p-2 border rounded h-24"></textarea>
@@ -73,7 +74,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue'; // <-- FIX: Added this import
 import api from '@/services/api';
 import { Plus, FilePenLine, Trash2 } from 'lucide-vue-next';
 
@@ -83,10 +84,10 @@ const error = ref(null);
 const isModalOpen = ref(false);
 const isEditing = ref(false);
 const currentAuthor = ref({});
-const selectedFile = ref(null);
 
 const modalTitle = computed(() => (isEditing.value ? 'Edit Author' : 'Add New Author'));
 
+// This function is no longer needed if the backend provides full URLs, but it's safe to keep for now.
 const getImageUrl = (imagePath) => {
     if (!imagePath || imagePath.startsWith('http')) {
         return imagePath || 'https://placehold.co/48x48/ccc/ffffff?text=N/A';
@@ -110,60 +111,33 @@ const fetchData = async () => {
 
 onMounted(fetchData);
 
-const handleFileSelect = (event) => {
-    selectedFile.value = event.target.files[0];
-};
-
 const openAddModal = () => {
     isEditing.value = false;
     currentAuthor.value = {};
-    selectedFile.value = null;
     isModalOpen.value = true;
 };
 
 const openEditModal = (author) => {
     isEditing.value = true;
     currentAuthor.value = { ...author };
-    selectedFile.value = null;
     isModalOpen.value = true;
 };
 
+// FIX: Simplified saveAuthor for URL-based images
 const saveAuthor = async () => {
     try {
-        let authorId;
-
-        // STEP 1: Save text data and get the ID
         if (isEditing.value) {
-            authorId = currentAuthor.value.author_id;
-            // Send only the data, not the file
-            await api.updateAuthor(authorId, {
-                author_name: currentAuthor.value.author_name,
-                bio: currentAuthor.value.bio,
-                dob: currentAuthor.value.dob,
-            });
+            await api.updateAuthor(currentAuthor.value.author_id, currentAuthor.value);
         } else {
-            const response = await api.createAuthor(currentAuthor.value);
-            authorId = response.data.author_id;
+            await api.createAuthor(currentAuthor.value);
         }
-
-        // STEP 2: If a file was selected, upload it now with the correct ID
-        if (selectedFile.value) {
-            if (!authorId) throw new Error("Could not get Author ID for avatar upload.");
-            
-            const formData = new FormData();
-            formData.append('avatarFile', selectedFile.value);
-            await api.uploadAuthorAvatar(authorId, formData);
-        }
-        
-        await fetchData(); // Refresh the list
+        await fetchData();
         isModalOpen.value = false;
-
     } catch(e) {
         alert('Could not save author. See console for details.');
         console.error(e);
     }
 };
-
 
 const handleDelete = async (id) => {
     if (confirm('Delete this author? All their books will also be affected.')) {

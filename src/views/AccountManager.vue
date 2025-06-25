@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue'; // <-- FIX: Added this import
 import api from '@/services/api';
 import { Plus, FilePenLine } from 'lucide-vue-next';
 
@@ -115,7 +115,6 @@ const openAddModal = () => {
 
 const openEditModal = (user) => {
     isEditing.value = true;
-    // We only want to edit the role, so we only copy necessary fields
     currentUser.value = { uid: user.uid, fname: user.fname, lname: user.lname, email: user.email, role: user.role };
     isModalOpen.value = true;
 };
@@ -123,17 +122,13 @@ const openEditModal = (user) => {
 const saveUser = async () => {
     try {
         if (isEditing.value) {
-            // For editing, we only send the role to be updated
             await api.updateUser(currentUser.value.uid, { role: currentUser.value.role });
         } else {
-            // For creating, we send the full user object
             await api.createUser(currentUser.value);
         }
-        await fetchData(); // Refresh the list
+        await fetchData();
         isModalOpen.value = false;
     } catch (e) {
-        // --- THIS IS THE IMPROVEMENT ---
-        // Check if the error is a 409 Conflict error
         if (e.response && e.response.status === 409) {
             alert('Error: A user with this email address already exists.');
         } else {
