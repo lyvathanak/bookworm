@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { User } from '../users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 import { Author } from '../authors/entities/author.entity';
 import { Book } from '../books/entities/book.entity';
 import { Order } from '../orders/entities/order.entity';
@@ -27,31 +27,61 @@ export class SeederService {
   async seed() {
     this.logger.log('--- STARTING SEED ---');
     
+    // First, ensure the admin account exists.
+    await this.seedAdmin();
+
     // THIS IS THE FIX: Use a raw TRUNCATE...CASCADE query for robustness.
     // This command clears all data and handles all relationships automatically.
+    // Note: This will not delete the admin user created above if run multiple times.
     await this.dataSource.query(
-      'TRUNCATE TABLE "user", "author", "book", "order", "order_item", "cart", "wishlist", "follow" RESTART IDENTITY CASCADE;',
+      'TRUNCATE TABLE "author", "book", "order", "order_item", "cart", "wishlist", "follow" RESTART IDENTITY CASCADE;',
     );
-    this.logger.log('All tables truncated successfully.');
+    this.logger.log('All non-user tables truncated successfully.');
 
-    // Seeding logic
+
+    // Seeding logic for other data
     const createdUsers = await this.seedUsers();
     const createdAuthors = await this.seedAuthors();
     const createdBooks = await this.seedBooks(createdAuthors);
     await this.seedOrders(createdUsers, createdBooks);
-    //await this.seedRatings(createdUsers, createdBooks);
     
     this.logger.log('--- SEEDING COMPLETE ---');
     return { message: 'Database seeded successfully!' };
   }
   
+  /**
+   * Creates the default admin user if it doesn't exist.
+   */
+  async seedAdmin() {
+    const adminEmail = 'admin@bookworm.com';
+    const existingAdmin = await this.usersService.findOneByEmail(adminEmail);
+
+    if (!existingAdmin) {
+      this.logger.log('Admin user not found, creating one...');
+      const adminData = {
+        fname: 'Admin',
+        lname: 'User',
+        email: adminEmail,
+        password: 'password123', // You should use a more secure password or environment variable
+        role: UserRole.ADMIN,
+      };
+      await this.usersService.create(adminData);
+      this.logger.log('Admin user created successfully.');
+    } else {
+      this.logger.log('Admin user already exists.');
+    }
+  }
+
   private async seedUsers(): Promise<User[]> {
     const createdUsers: User[] = [];
     for (const userData of usersData) {
-      const user = await this.usersService.create(userData);
-      createdUsers.push(user);
+       // We skip creating the admin here because seedAdmin() already handled it.
+      if (userData.email !== 'admin@bookworm.com') {
+        const user = await this.usersService.create(userData);
+        createdUsers.push(user);
+      }
     }
-    this.logger.log(`${createdUsers.length} users seeded.`);
+    this.logger.log(`${createdUsers.length} non-admin users seeded.`);
     return createdUsers;
   }
 
@@ -86,18 +116,4 @@ export class SeederService {
 
       this.logger.log('Sample orders seeded.');
   }
-
-  // private async seedRatings(users: User[], books: Book[]): Promise<void> {
-  //   const ratingsToCreate = ratingsData.map(ratingData => {
-  //       const user = users.find(u => u.email === ratingData.user_email_ref);
-  //       const book = books.find(b => b.title === ratingData.book_title_ref);
-  //       if (!user || !book) return null;
-  //       return this.ratingRepository.create({ user, book, star: ratingData.star, status: ratingData.status });
-  //   }).filter(rating => rating !== null);
-
-  //   if (ratingsToCreate.length > 0) {
-  //     await this.ratingRepository.save(ratingsToCreate);
-  //     this.logger.log(`${ratingsToCreate.length} ratings seeded.`);
-  //   }
-  // }
 }

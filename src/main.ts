@@ -3,9 +3,18 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { SeederService } from './seeder/seeder.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // --- ADDED: Run the seeder on startup ---
+  const seeder = app.get(SeederService);
+  await seeder.seedAdmin(); // This ensures the admin account is created if it doesn't exist
+  // You can also run the full seed here if you want to reset all data on every start.
+  // Be careful with this in production.
+  // await seeder.seed(); 
+  // ----------------------------------------
 
   app.enableCors();
 
