@@ -17,8 +17,9 @@ export class PublicRatingsService {
     private booksRepository: Repository<Book>,
   ) {}
 
-  async create(userId: number, createRatingDto: CreateRatingDto): Promise<Rating> {
-    const { bookId, star } = createRatingDto;
+  // FIX: Update the method signature
+  async create(userId: number, bookId: number, createRatingDto: CreateRatingDto): Promise<Rating> {
+    const { star } = createRatingDto;
 
     const user = await this.usersRepository.findOneBy({ uid: userId });
     if (!user) {

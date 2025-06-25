@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Param, UseGuards, Request, ParseIntPipe } from '@nestjs/common';
 import { PublicRatingsService } from './public-ratings.service';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -9,14 +9,13 @@ export class PublicRatingsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
+  // FIX: Get bookId from @Param and use ParseIntPipe to ensure it's a number
   create(
     @Request() req,
-    @Param('bookId') bookId: string,
+    @Param('bookId', ParseIntPipe) bookId: number,
     @Body() createRatingDto: CreateRatingDto,
   ) {
     const userId = req.user.userId;
-    // Ensure the bookId from the DTO matches the URL param
-    createRatingDto.bookId = +bookId; 
-    return this.publicRatingsService.create(userId, createRatingDto);
+    return this.publicRatingsService.create(userId, bookId, createRatingDto);
   }
 }

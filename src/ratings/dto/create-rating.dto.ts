@@ -7,6 +7,4 @@ export class CreateRatingDto {
   @Max(5)
   star: number;
 
-  @IsInt()
-  bookId: number;
 }
