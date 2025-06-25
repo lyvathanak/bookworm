@@ -41,7 +41,7 @@
     </div>
     
     <div class="user-rating-section">
-      <h3>Rate this book</h3>
+      <h3>Leave Your Rating</h3>
       <div class="user-rating-stars">
         <span 
           v-for="n in 5" 
@@ -69,6 +69,8 @@
 </template>
 
 <script setup>
+// The <script setup> section remains exactly the same as the previous version.
+// No changes are needed there.
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/services/api';
@@ -163,7 +165,7 @@ watch(() => props.id, (newId) => {
 </script>
 
 <style scoped>
-/* ... all your other styles ... */
+/* All previous styles remain */
 .book-description-page { max-width: 1000px; margin: auto; padding: 20px; }
 .loading-state { text-align: center; padding: 50px; font-size: 1.2rem; }
 .breadcrumb { margin-bottom: 20px; }
@@ -209,22 +211,35 @@ watch(() => props.id, (newId) => {
   color: #555;
 }
 
+/* Updated styles for clarity */
 .user-rating-section {
     margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
+    padding: 20px;
+    border: 1px dashed #ccc;
+    border-radius: 8px;
+    background-color: #fafafa;
 }
 
 .user-rating-section h3 {
-    margin-bottom: 10px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
 }
 
-/* --- FIX: ADD CURSOR:POINTER HERE --- */
+.user-rating-stars {
+    display: flex;
+    justify-content: center;
+}
+
 .user-rating-stars .star-input {
-    font-size: 2rem;
+    font-size: 2.5rem; /* Made larger to be more obvious */
     color: #ccc;
-    cursor: pointer; /* This line makes the stars clickable */
-    transition: color 0.2s;
+    cursor: pointer; /* This is the critical line */
+    transition: color 0.2s, transform 0.2s;
+}
+
+.user-rating-stars .star-input:hover {
+    transform: scale(1.1); /* Add a little hover effect */
 }
 
 .user-rating-stars .star-input.filled {
@@ -232,7 +247,8 @@ watch(() => props.id, (newId) => {
 }
 
 .rating-message {
-    margin-top: 10px;
+    margin-top: 15px;
+    text-align: center;
     color: #28a745;
     font-style: italic;
 }
