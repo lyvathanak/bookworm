@@ -6,27 +6,27 @@ import { join } from 'path';
 import { SeederService } from './seeder/seeder.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    hostname: '0.0.0.0',
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // --- ADDED: Run the seeder on startup ---
   const seeder = app.get(SeederService);
   await seeder.seedAdmin();
+  // ----------------------------------------
 
+  // --- CORS Configuration ---
   const allowedOrigins = [
-    'https://bookworm-shop.onrender.com',   //user frontend
-    'https://bookworm-1-zjwe.onrender.com', //Admin frontend
+    'https://bookworm-shop.onrender.com',   // User frontend
+    'https://bookworm-1-zjwe.onrender.com', // Admin frontend
   ];
 
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
         const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
         return callback(new Error(msg), false);
       }
-      return callback(null, true);
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
@@ -35,13 +35,14 @@ async function bootstrap() {
 
   app.useStaticAssets(join(__dirname, '..', 'storage'));
 
-  app.useGlobalPipes(new ValidationPipe({ 
-    whitelist: true, 
-    transform: true 
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true
   }));
 
-await app.listen(5000); 
+  // This is the correct way to listen on all interfaces for Render
+  await app.listen(5000, '0.0.0.0');
 
-console.log(`Application is running on: ${await app.getUrl()}`);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
