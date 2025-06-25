@@ -15,7 +15,7 @@ export class AuthService {
    * Validates a user for the ADMIN login.
    * Throws an error if the user is not an administrator.
    */
-  async validateUser(email: string, pass: string): Promise<any> {
+async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(email);
 
     if (user && (await bcrypt.compare(pass, user.password))) {
