@@ -19,7 +19,7 @@
         </div>
         <div class="cart-item" v-for="item in cartStore.items" :key="item.cart_id">
           <div class="item-details">
-            <img v-if="item.book.image" :src="`${imageUrlBase}/${item.book.image}`" :alt="item.book.title" class="item-image" />
+            <img v-if="item.book.image" :src="item.book.image" :alt="item.book.title" class="item-image" />
             <div v-else class="item-image-placeholder">No Image</div>
             <div class="item-info">
               <h3 class="item-title">{{ item.book.title }}</h3>
@@ -62,9 +62,6 @@ import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { cartStore } from '@/store/cart';
 
-// FIX: Get the base URL from environment variables
-const imageUrlBase = process.env.VUE_APP_API_URL;
-
 const router = useRouter();
 
 onMounted(() => {
@@ -82,6 +79,7 @@ const confirmRemoveItem = (cartItemId) => {
 </script>
 
 <style scoped>
+/* Use existing styles from the original CartPage.vue */
 .cart-page { max-width: 900px; margin: auto; padding: 20px; }
 .cart-container { background: #fff; padding: 20px; border-radius: 8px; }
 .breadcrumb { margin-bottom: 20px; }

@@ -8,7 +8,7 @@
     <div v-else class="books-grid">
       <div class="book-item" v-for="item in wishlistStore.items" :key="item.wishid">
         <div class="book-cover-container" @click="goToBookDetail(item.book.bid)">
-          <img v-if="item.book.image" :src="`${imageUrlBase}/${item.book.image}`" :alt="item.book.title" class="book-cover-img"/>
+          <img v-if="item.book.image" :src="item.book.image" :alt="item.book.title" class="book-cover-img"/>
           <div v-else class="book-cover-placeholder">No Image</div>
         </div>
         <h3 class="book-title">{{ item.book.title }}</h3>
@@ -30,7 +30,6 @@ import { wishlistStore } from '@/store/wishlist';
 import { cartStore } from '@/store/cart';
 
 const router = useRouter();
-const imageUrlBase = process.env.VUE_APP_API_URL;
 
 onMounted(() => {
   wishlistStore.fetchWishlist();
@@ -56,7 +55,7 @@ const goToBookDetail = (bookId) => {
   justify-content: center;
   background-color: #f0f0f0;
   color: #aaa;
-  font-size: 0.9rem;
+  font-size: 1rem;
   border-radius: 4px;
 }
 .book-title { font-weight: bold; }
