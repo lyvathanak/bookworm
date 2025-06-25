@@ -6,26 +6,31 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Add JWT token for admin from localStorage (use a distinct key if you like)
+// Interceptor to add the JWT token to every outgoing request.
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('authToken'); // or 'adminAuthToken' if you use a separate token
+    const token = localStorage.getItem('authToken');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
 }, (error) => Promise.reject(error));
 
-apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('authToken'); 
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+
+// Interceptor to handle 401 Unauthorized errors globally.
+// If a token is expired or invalid, it removes the token and redirects to the login page.
+apiClient.interceptors.response.use((response) => response, (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('authToken');
+      // This ensures a clean redirect for the admin portal
+      window.location.href = '/'; 
     }
-    return config;
-}, (error) => Promise.reject(error));
+    return Promise.reject(error);
+});
+
 
 // --- The Complete and Correct API Definition ---
 const api = {
-  // Auth
+  // Auth - This now correctly points to the single admin login endpoint.
   login: (credentials) => apiClient.post('/auth/login', credentials),
 
   // Books (Products)
@@ -33,14 +38,18 @@ const api = {
   createBook: (data) => apiClient.post('/books', data),
   updateBook: (id, data) => apiClient.patch(`/books/${id}`, data),
   deleteBook: (id) => apiClient.delete(`/books/${id}`),
-  uploadBookImage: (id, formData) => apiClient.post(`/books/${id}/upload-image`, formData),
+  uploadBookImage: (id, formData) => apiClient.post(`/books/${id}/upload-image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 
   // Authors
   getAuthors: () => apiClient.get('/authors'),
   createAuthor: (data) => apiClient.post('/authors', data),
   updateAuthor: (id, data) => apiClient.patch(`/authors/${id}`, data),
   deleteAuthor: (id) => apiClient.delete(`/authors/${id}`),
-  uploadAuthorAvatar: (id, formData) => apiClient.post(`/authors/${id}/upload-avatar`, formData),
+  uploadAuthorAvatar: (id, formData) => apiClient.post(`/authors/${id}/upload-avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   
   // Orders
   getOrders: () => apiClient.get('/admin/orders'),
