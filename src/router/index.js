@@ -1,73 +1,70 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomeView from '../views/HomeView.vue';
-import AuthPage from '../views/AuthPage.vue';
-import SignIn from '../views/SignIn.vue';
-import SignUp from '../views/SignUp.vue';
-import WishListPage from '../views/WishListPage.vue';
-import CheckoutPage from '../views/CheckoutPage.vue';
-import CartPage from '../views/CartPage.vue';
-import AuthorProfile from '../views/AuthorProfile.vue';
-import BookList from '../views/BookList.vue';
-import DescriptionPage from '../views/DescriptionPage.vue';
-import ProfileView from '../views/ProfileView.vue';
 import { authStore } from '@/store/auth';
 
 const routes = [
   {
-    path: '/',
+ path: '/',
     name: 'home',
-    component: HomeView,
+    // FIX: Use lazy loading for the component
+    component: () => import(/* webpackChunkName: "home" */ '../views/HomeView.vue'),
   },
   {
     path: '/wishlist',
     name: 'wishlist',
-    component: WishListPage,
+    // FIX: Use lazy loading for the component
+    component: () => import(/* webpackChunkName: "wishlist" */ '../views/WishListPage.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/book/:id',
     name: 'book-description',
-    component: DescriptionPage,
+    // FIX: Use lazy loading for the component
+    component: () => import(/* webpackChunkName: "book-description" */ '../views/DescriptionPage.vue'),
     props: true,
   },
   {
     path: '/checkout',
     name: 'checkout',
-    component: CheckoutPage,
+    // FIX: Use lazy loading for the component
+    component: () => import(/* webpackChunkName: "checkout" */ '../views/CheckoutPage.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/cart',
     name: 'cart',
-    component: CartPage,
+    // FIX: Use lazy loading for the component
+    component: () => import(/* webpackChunkName: "cart" */ '../views/CartPage.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/author/:id',
     name: 'author-profile',
-    component: AuthorProfile,
+    // FIX: Use lazy loading for the component
+    component: () => import(/* webpackChunkName: "author-profile" */ '../views/AuthorProfile.vue'),
     props: true,
   },
   {
     path: '/author/:id/books',
     name: 'book-list',
-    component: BookList,
+    // FIX: Use lazy loading for the component
+    component: () => import(/* webpackChunkName: "book-list" */ '../views/BookList.vue'),
     props: true,
   },
   {
     path: '/profile',
     name: 'profile',
-    component: ProfileView,
+    // FIX: Use lazy loading for the component
+    component: () => import(/* webpackChunkName: "profile" */ '../views/ProfileView.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/auth',
-    component: AuthPage,
+    // FIX: Use lazy loading for the parent and child components
+    component: () => import(/* webpackChunkName: "auth" */ '../views/AuthPage.vue'),
     children: [
       { path: '', redirect: { name: 'signin' } },
-      // Corrected paths point directly to the components
-      { path: 'signin', name: 'signin', component: SignIn },
-      { path: 'signup', name: 'signup', component: SignUp },
+      { path: 'signin', name: 'signin', component: () => import(/* webpackChunkName: "auth-signin" */ '../views/SignIn.vue') },
+      { path: 'signup', name: 'signup', component: () => import(/* webpackChunkName: "auth-signup" */ '../views/SignUp.vue') },
     ],
   },
 ];

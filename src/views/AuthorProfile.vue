@@ -46,7 +46,6 @@ import { authStore } from '@/store/auth';
 const props = defineProps({ id: String });
 const router = useRouter();
 
-// FIX: Get the base URL from environment variables to prevent mixed content errors
 const imageUrlBase = process.env.VUE_APP_API_URL;
 
 const author = ref(null);
@@ -58,11 +57,12 @@ const fetchAuthor = async (authorId) => {
   try {
     const { data } = await api.getAuthorById(authorId);
     author.value = data;
-    // FIX: Check if the user is following this author when the data is loaded
-    // This assumes your API returns an `is_following` field with the author details.
-    if (data.is_following) {
-        isFollowing.value = data.is_following;
+    // --- THIS IS THE FIX ---
+    // Sets the initial follow state based on the API response.
+    if (data && typeof data.is_following !== 'undefined') {
+      isFollowing.value = data.is_following;
     }
+    // ----------------------
   } catch (error) {
     console.error("Failed to fetch author:", error);
     author.value = null;
@@ -91,7 +91,6 @@ const toggleFollow = async () => {
     }
   } catch (error) {
     console.error('Failed to update follow status:', error);
-    // FIX: Handle the 409 conflict gracefully
     if (error.response && error.response.status === 409) {
         alert("You are already following this author.");
         isFollowing.value = true; // Correct the state if it's out of sync
@@ -116,14 +115,12 @@ watch(() => props.id, (newId) => {
   --dark-blue: #001F3F;
   --gold: #FFD700;
 }
-
 .author-profile {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0;
   background-color: #f4f7f6;
 }
-
 .profile-header {
   background-color: #001F3F;
   color: white;
@@ -133,14 +130,12 @@ watch(() => props.id, (newId) => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   margin-bottom: 2rem;
 }
-
 .profile-info {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 15px;
 }
-
 .profile-icon {
   font-size: 80px;
   color: #FFD700;
@@ -149,13 +144,11 @@ watch(() => props.id, (newId) => {
   padding: 10px;
   border: 4px solid #001F3F;
 }
-
 .profile-details h1 {
   margin: 0;
   font-size: 2.5rem;
   font-weight: bold;
 }
-
 .follow-btn {
   padding: 10px 25px;
   background: #FFD700;
@@ -168,16 +161,13 @@ watch(() => props.id, (newId) => {
   margin-top: 10px;
   transition: background-color 0.3s, transform 0.2s;
 }
-
 .follow-btn:hover {
   background-color: #f0c400;
   transform: scale(1.05);
 }
-
 .profile-content {
   padding: 0 20px;
 }
-
 .bio-section, .books-section {
   background: #ffffff;
   padding: 25px;
@@ -185,7 +175,6 @@ watch(() => props.id, (newId) => {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   margin-bottom: 2rem;
 }
-
 .bio-section h2, .books-section h2 {
   font-size: 1.8rem;
   color: #001F3F;
@@ -195,20 +184,17 @@ watch(() => props.id, (newId) => {
   padding-bottom: 10px;
   border-bottom: 2px solid #FFD700;
 }
-
 .bio-text {
   font-size: 1rem;
   line-height: 1.6;
   color: #333;
   text-align: center;
 }
-
 .book-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 25px;
 }
-
 .book-item {
   text-align: center;
   background: #f9f9f9;
@@ -216,35 +202,29 @@ watch(() => props.id, (newId) => {
   border-radius: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
 }
-
 .book-item:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 15px rgba(0,0,0,0.1);
 }
-
 .book-cover {
   cursor: pointer;
 }
-
 .book-cover-img {
   width: 100%;
   height: 270px;
   object-fit: contain;
   border-radius: 4px;
 }
-
 .book-title {
   font-size: 1rem;
   font-weight: 600;
   margin: 10px 0 5px;
   color: #001F3F;
 }
-
 .book-price {
   color: #555;
   font-weight: bold;
 }
-
 .loading-state {
   text-align: center;
   padding: 50px;
