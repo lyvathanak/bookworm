@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Brackets, ILike } from 'typeorm';
+import { Repository, Brackets } from 'typeorm';
 import { Book } from './entities/book.entity';
 import { Author } from '../authors/entities/author.entity';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -13,6 +13,7 @@ export class BooksService {
     @InjectRepository(Author) private readonly authorsRepository: Repository<Author>,
   ) {}
 
+  // This service is now much simpler as it just passes data through.
   async findAll(options: { genre?: string, search?: string } = {}): Promise<any[]> {
     const { genre, search } = options;
     const query = this.booksRepository.createQueryBuilder('book')
@@ -30,12 +31,7 @@ export class BooksService {
       query.andWhere(searchCondition);
     }
       
-    const books = await query.getMany();
-    
-    return books.map((book) => ({
-      bid: book.bid, title: book.title, price: book.price, stock: book.stock, status: book.status, image: book.image, genre: book.genre, booktype: book.booktype,
-      author: book.author ? { author_name: book.author.author_name, author_id: book.author.author_id } : null,
-    }));
+    return query.getMany();
   }
 
   async create(createBookDto: CreateBookDto): Promise<Book> {

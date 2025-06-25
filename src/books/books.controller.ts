@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
-// Removed unused imports like FileInterceptor, diskStorage, etc.
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -20,8 +19,6 @@ export class BooksController {
   update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
     return this.booksService.update(+id, updateBookDto);
   }
-
-  // FIX: The incomplete 'upload-image' endpoint has been completely removed.
 
   @Get()
   findAll(@Query('genre') genre?: string, @Query('search') search?: string) {

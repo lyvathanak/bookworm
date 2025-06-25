@@ -42,4 +42,8 @@ export class CreateBookDto {
   @IsString()
   @IsOptional()
   isbn?: string;
+
+  @IsUrl() // <-- Add this validator
+  @IsOptional()
+  image?: string;
 }

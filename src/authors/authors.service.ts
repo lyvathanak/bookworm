@@ -11,25 +11,19 @@ export class AuthorsService {
     @InjectRepository(Author) private authorsRepository: Repository<Author>,
   ) {}
 
+  // The findAll and findOne methods are now much simpler.
+  // They don't need to construct URLs because the full URL is already in the database.
   async findAll(): Promise<any[]> {
-    const authors = await this.authorsRepository
+    return this.authorsRepository
       .createQueryBuilder('author')
       .loadRelationCountAndMap('author.bookCount', 'author.books')
       .getMany();
-    
-    return authors.map(author => ({
-      author_id: author.author_id,
-      author_name: author.author_name,
-      bio: author.bio,
-      avatar: author.avatar,
-      bookCount: (author as any).bookCount,
-    }));
   }
 
   async findOne(id: number): Promise<Author> {
     const author = await this.authorsRepository.findOne({ 
         where: { author_id: id },
-        relations: ['books'] // Also load all books by this author
+        relations: ['books']
     });
     if (!author) {
       throw new NotFoundException(`Author with ID ${id} not found`);
@@ -37,7 +31,7 @@ export class AuthorsService {
     return author;
   }
 
-
+  // create, update, and remove methods remain the same.
   async create(createAuthorDto: CreateAuthorDto): Promise<Author> {
     const author = this.authorsRepository.create(createAuthorDto);
     return this.authorsRepository.save(author);
