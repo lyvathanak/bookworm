@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar">
     <div class="user-info">
-      <img :src="user?.avatar ? `${imageUrlBase}/${user.avatar}` : 'https://via.placeholder.com/100'" alt="Avatar" class="avatar"/>
+      <img :src="user?.avatar ? user.avatar : 'https://via.placeholder.com/100'" alt="Avatar" class="avatar"/>
       <h4>{{ user?.fname }} {{ user?.lname }}</h4>
     </div>
     <nav class="sidebar-nav">
@@ -15,9 +15,6 @@
 </template>
 
 <script setup>
-// FIX: Get the base URL from environment variables for portability
-const imageUrlBase = process.env.VUE_APP_API_URL;
-
 defineProps({
   user: Object,
   activeSection: String,

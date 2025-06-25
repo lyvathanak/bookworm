@@ -5,35 +5,35 @@
       <h2>No books found.</h2>
       <p>Try adjusting your search or check back later!</p>
     </div>
-<div v-else class="book-grid">
-  <div class="book-item" v-for="book in books" :key="book.bid">
-    <div class="book-cover" @click="goToBookDetail(book.bid)">
-      <img 
-        v-if="book.image"
-        :src="`${imageUrlBase}/${book.image}`" 
-        :alt="book.title" 
-        class="book-cover-img"
-      />
-      <div v-else class="book-cover-placeholder">
-        <span>No Image</span>
+    <div v-else class="book-grid">
+      <div class="book-item" v-for="book in books" :key="book.bid">
+        <div class="book-cover" @click="goToBookDetail(book.bid)">
+          <img
+            v-if="book.image"
+            :src="book.image"
+            :alt="book.title"
+            class="book-cover-img"
+          />
+          <div v-else class="book-cover-placeholder">
+            <span>No Image</span>
+          </div>
+        </div>
+        <h3 class="book-title">{{ book.title }}</h3>
+        <router-link
+          v-if="book.author"
+          :to="`/author/${book.author.author_id}`"
+          class="book-author-link"
+        >
+          <p class="book-author">{{ book.author.author_name }}</p>
+        </router-link>
+        <div class="book-price-cart">
+          <span class="book-price">${{ book.price.toFixed(2) }}</span>
+          <button class="add-to-cart-btn" @click="addToCart(book)">
+            Add to cart
+          </button>
+        </div>
       </div>
     </div>
-    <h3 class="book-title">{{ book.title }}</h3>
-    <router-link
-      v-if="book.author"
-      :to="`/author/${book.author.author_id}`"
-      class="book-author-link"
-    >
-      <p class="book-author">{{ book.author.author_name }}</p>
-    </router-link>
-    <div class="book-price-cart">
-      <span class="book-price">${{ book.price.toFixed(2) }}</span>
-      <button class="add-to-cart-btn" @click="addToCart(book)">
-        Add to cart
-      </button>
-    </div>
-  </div>
-</div>
   </div>
 </template>
 
@@ -48,7 +48,6 @@ const router = useRouter();
 const route = useRoute();
 const books = ref([]);
 const isLoading = ref(true);
-const imageUrlBase = process.env.VUE_APP_API_URL;
 
 const fetchBooks = async () => {
   isLoading.value = true;

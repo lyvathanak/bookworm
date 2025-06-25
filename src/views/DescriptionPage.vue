@@ -26,7 +26,7 @@
         </div>
       </div>
       <div class="book-cover">
-        <img :src="`http://localhost:5000/${book.image}`" :alt="book.title" class="book-cover-image" />
+        <img :src="book.image" :alt="book.title" class="book-cover-image" />
       </div>
     </div>
     <div class="book-details-section">
@@ -40,22 +40,20 @@
   <div v-else class="loading-state">Book not found.</div>
 </template>
 
-
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { useRouter } from 'vue-router'; // Removed 'useRoute'
+import { useRouter } from 'vue-router';
 import api from '@/services/api';
 import { cartStore } from '@/store/cart';
 import { wishlistStore } from '@/store/wishlist';
 import { authStore } from '@/store/auth';
 
 const props = defineProps({ id: String });
-const router = useRouter(); // 'useRoute' is no longer needed here
+const router = useRouter(); 
 
 const book = ref(null);
 const isLoading = ref(true);
 const quantity = ref(1);
-
 
 const isWishlisted = computed(() => {
   if (!book.value) return false;
