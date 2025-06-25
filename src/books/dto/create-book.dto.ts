@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsInt, IsEnum, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsInt, IsEnum, Min, IsUrl } from 'class-validator'; // <-- FIX: Added IsUrl here
 
 enum BookType {
     PHYSICAL = 'Physical',
@@ -29,6 +29,10 @@ export class CreateBookDto {
   @Min(0)
   stock: number;
   
+  @IsUrl()
+  @IsOptional()
+  image?: string;
+  
   @IsEnum(BookType)
   booktype: BookType;
   
@@ -42,8 +46,4 @@ export class CreateBookDto {
   @IsString()
   @IsOptional()
   isbn?: string;
-
-  @IsUrl() // <-- Add this validator
-  @IsOptional()
-  image?: string;
 }
