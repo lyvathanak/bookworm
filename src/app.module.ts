@@ -40,7 +40,7 @@ TypeOrmModule.forRootAsync({
         type: 'postgres',
         url,
         entities: [User, Book, Author, Order, OrderItem, Rating, Cart, Wishlist, Follow],
-        synchronize: true, // set to false in production
+        synchronize: true, 
         ssl: true,
       };
     }

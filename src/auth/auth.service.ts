@@ -13,7 +13,6 @@ export class AuthService {
 
   /**
    * Validates a user for the ADMIN login.
-   * Throws an error if the user is not an administrator.
    */
 async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(email);
@@ -30,7 +29,6 @@ async validateUser(email: string, pass: string): Promise<any> {
 
   /**
    * Validates a user for the PUBLIC login.
-   * Does NOT check for role.
    */
   async validatePublicUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(email);
